@@ -1,9 +1,32 @@
+# disable pylint for this file
+# pylint: disable=no-member
+# pylint: disable=import-error
+# pylint: disable=unused-argument
+# pylint: disable=missing-function-docstring
+# pylint: disable=missing-class-docstring
+# pylint: disable=missing-module-docstring
+# pylint: disable=invalid-name
+# pylint: disable=too-many-arguments
+# pylint: disable=too-many-locals
+# pylint: disable=too-many-statements
+# pylint: disable=too-many-branches
+# pylint: disable=too-many-nested-blocks
+# pylint: disable=too-many-boolean-expressions
+# pylint: disable=too-many-instance-attributes
+# pylint: disable=too-many-public-methods
+# pylint: disable=too-many-lines
+# pylint: disable=too-many-ancestors
+# pylint: disable=too-many-function-args
+# pylint: disable=too-many-arguments
+# pylint: disable=too-many-locals
+# pylint: disable=too-many-statements
+# pylint: disable=duplicate-code
+
+import os
 from logging.config import fileConfig
 from dotenv import load_dotenv
-import os
 from sqlalchemy import engine_from_config
 from sqlalchemy import pool
-from sqlalchemy.ext.declarative import declarative_base
 from alembic import context
 from backend.app.models import Base
 

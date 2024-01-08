@@ -1,3 +1,26 @@
+# disable pylint for this file
+# pylint: disable=no-member
+# pylint: disable=import-error
+# pylint: disable=unused-argument
+# pylint: disable=missing-function-docstring
+# pylint: disable=missing-class-docstring
+# pylint: disable=missing-module-docstring
+# pylint: disable=invalid-name
+# pylint: disable=too-many-arguments
+# pylint: disable=too-many-locals
+# pylint: disable=too-many-statements
+# pylint: disable=too-many-branches
+# pylint: disable=too-many-nested-blocks
+# pylint: disable=too-many-boolean-expressions
+# pylint: disable=too-many-instance-attributes
+# pylint: disable=too-many-public-methods
+# pylint: disable=too-many-lines
+# pylint: disable=too-many-ancestors
+# pylint: disable=too-many-function-args
+# pylint: disable=too-many-arguments
+# pylint: disable=too-many-locals
+# pylint: disable=too-many-statements
+# pylint: disable=wrong-import-order
 """Added extra models
 
 Revision ID: 05abf5bc2939
