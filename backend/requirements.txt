@@ -1,0 +1,6 @@
+# Python dependencies
+fastapi
+sqlalchemy
+pyodbc
+requests
+pytest
