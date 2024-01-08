@@ -4,3 +4,6 @@ sqlalchemy
 pyodbc
 requests
 pytest
+pylint
+python-dotenv
+alembic
