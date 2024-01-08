@@ -5,7 +5,7 @@ from sqlalchemy import engine_from_config
 from sqlalchemy import pool
 from sqlalchemy.ext.declarative import declarative_base
 from alembic import context
-from backend.app.models.user_model import Base
+from backend.app.models import Base
 
 # Load the .env file
 load_dotenv()

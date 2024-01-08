@@ -4,9 +4,8 @@ Automate Event Model
 
 import datetime
 from sqlalchemy import Column, Integer, String, DateTime
-from sqlalchemy.ext.declarative import declarative_base
 
-Base = declarative_base()
+from .base_model import Base
 
 
 class AutomateEvent(Base):  # pylint: disable=too-few-public-methods

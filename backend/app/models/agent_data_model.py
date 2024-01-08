@@ -12,13 +12,12 @@ Dependencies:
 """
 import datetime
 from sqlalchemy import Column, Integer, String, DateTime
-from sqlalchemy.ext.declarative import declarative_base
 
 
-Base = declarative_base()
+from .base_model import Base
 
 
-class Agent(Base):  # pylint: disable=too-few-public-methods
+class AgentData(Base):  # pylint: disable=too-few-public-methods
     """
     This is the Agent class involving different details about an agent.
 

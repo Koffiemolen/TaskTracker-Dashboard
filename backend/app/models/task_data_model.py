@@ -4,13 +4,12 @@ Task Data Model
 """
 
 from sqlalchemy import Column, Integer, String, Boolean
-from sqlalchemy.ext.declarative import declarative_base
 
 
-Base = declarative_base()
+from .base_model import Base
 
 
-class Task(Base):  # pylint: disable=too-few-public-methods
+class TaskData(Base):  # pylint: disable=too-few-public-methods
     """
     This is the Task class involving different details about a task.
     """
