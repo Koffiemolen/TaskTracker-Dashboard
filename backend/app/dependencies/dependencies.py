@@ -18,11 +18,12 @@ Dependencies:
     - logging
 """
 
+from os import getenv
+import logging
 from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
 import jwt
-from os import getenv
-import logging
+
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/users/login")
 logging.basicConfig(level=logging.INFO)
@@ -41,15 +42,13 @@ def get_current_user(token: str = Depends(oauth2_scheme)):
         Default is a token provided by the FastAPI dependency `oauth2_scheme`.
 
     Raises:
-        HTTPException(401): If the token is invalid, or if the "sub" field (representing the username)
+        HTTPException(401): If the token is invalid, or if the "sub" field (representing the username)  # pylint: disable=line-too-long
         does not exist in the payload.
 
     Returns:
         dict: A dict mapping "username" to username, if the token is valid and the username exists.
     """
 
-    print(f"Token: {token}")
-    logger.info(f"Token: {token}")
     try:
         payload = jwt.decode(token, getenv("JWT_SECRET_KEY"), algorithms=[getenv("JWT_ALGORITHM")])
         username: str = payload.get("sub")
@@ -58,6 +57,6 @@ def get_current_user(token: str = Depends(oauth2_scheme)):
             raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,
                                 detail="Invalid authentication credentials")  # pylint: disable=line-too-long
         return {"username": username}
-    except jwt.PyJWTError:
+    except jwt.PyJWTError as exc:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,
-                            detail="Invalid authentication credentials")  # pylint: disable=line-too-long
+                            detail="Invalid authentication credentials") from exc
