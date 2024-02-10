@@ -6,25 +6,24 @@ It includes:
 2. A protected endpoint
 """
 import logging
-from datetime import timedelta
+from typing import List
+
 from fastapi import APIRouter, HTTPException, Depends
 from pydantic import BaseModel
 from backend.app.services.authentication_service import authenticate_user  # pylint: disable=import-error
 from backend.app.services.token_service import create_access_token  # pylint: disable=import-error
-from backend.app.dependencies.dependencies import get_current_user  # pylint: disable=import-error
+from backend.app.dependencies.dependencies import get_current_user_roles  # pylint: disable=import-error
+from backend.app.dependencies.dependencies import require_role # pylint: disable=import-error
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 router = APIRouter()
 
+
 class UserLoginSchema(BaseModel):
     """
     Pydantic model for User Login.
-
-    Attributes:
-        username (str): username of user
-        password (str): password of user
     """
     username: str
     password: str
@@ -43,28 +42,33 @@ def login(user: UserLoginSchema):
     Returns:
         dict : Returns an active JWT token
     """
-    print(f"User: {user.username}, Password: {user.password}")
-    logger.info("User: %s", user.username)
+    logger.info("Checking if password and user exists in AD, checking user: %s", user.username)
+    authenticated, roles = authenticate_user(user.username, user.password)
+    logger.info("Authenticated: %s, Roles: %s", authenticated, roles)
+    if authenticated:
+        access_token = create_access_token(data={"sub": user.username, "roles": roles})
+        return {"access_token": access_token, "token_type": "bearer", "roles": roles}
 
-    if not authenticate_user(user.username, user.password):
-        raise HTTPException(status_code=401, detail="Incorrect username or password")
+    raise HTTPException(status_code=401, detail="Invalid username or password")
 
-    access_token_expires = timedelta(minutes=30)
-    access_token = create_access_token(
-        data={"sub": user.username}, expires_delta=access_token_expires
-    )
 
-    print(f"Token: {access_token}")
-    return {"access_token": access_token, "token_type": "bearer"}
+# @router.get("/protected-endpoint")
+# async def protected_endpoint(current_user: dict = Depends(get_current_user)):
+#     return {"message": "This is a protected endpoint", "user": current_user}
 
-@router.get("/protected-endpoint")
-async def protected_endpoint(current_user: dict = Depends(get_current_user)):
-    """Protected endpoint which return some protected data.
+@router.get("/protected-endpoint", dependencies=[Depends(require_role("admin"))])
+async def protected_endpoint():
+    """Protected endpoint for authenticated users."""
+    return {"message": "You have access to the admin endpoint."}
 
-    Args:
-        current_user (dict): The username of current logged-in user retrieved through JWT token.
 
-    Returns:
-        dict : Return some message along with user data.
-    """
-    return {"message": "This is a protected endpoint", "user": current_user}
+@router.get("/admin-only")
+def admin_only_endpoint(roles=Depends(require_role("admin"))):  # pylint: disable=unused-argument
+    """Admin only endpoint."""
+    return {"message": "Welcome, admin!"}
+
+
+@router.get("/test-roles")
+def test_roles(roles: List[str] = Depends(get_current_user_roles)):
+    """Test roles endpoint."""
+    return {"roles": roles}

@@ -29,9 +29,11 @@ def create_access_token(data: dict, expires_delta: timedelta = None):
     :rtype: str
 
     """
-    print(f"Creating access token for {data}")
+    logger.info("Creating access token for data: %s", data)
     to_encode = data.copy()
     expire = datetime.utcnow() + (expires_delta or timedelta(minutes=15))
     to_encode.update({"exp": expire})
+    # Debugging: Verify to_encode includes roles
+    logger.info("Token payload before encoding: %s", to_encode)
     encoded_jwt = jwt.encode(to_encode, getenv("JWT_SECRET_KEY"), algorithm=getenv("JWT_ALGORITHM"))
     return encoded_jwt

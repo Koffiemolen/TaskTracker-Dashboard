@@ -1,33 +1,15 @@
-"""
-This module provides the `get_current_user` function to extract the username
-from a valid token provided by a user. It relies on the FastAPI OAuth2 security model
-and the PyJWT library for token decoding and validation.
-
-If the token is invalid or the "sub" field (representing the username)
-does not exist in the payload, it raises an HTTP 401 Unauthorized exception.
-
-Required Environment Variables:
-    - JWT_SECRET_KEY: The secret key to decode JWT
-    - JWT_ALGORITHM: The algorithm used for encoding JWT
-
-Dependencies:
-    - fastapi
-    - fastapi.security
-    - jwt
-    - os
-    - logging
-"""
-
-from os import getenv
+"""This module contains dependencies for user authentication and role-based access control."""
 import logging
+from os import getenv
+from typing import List
+import jwt
 from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
-import jwt
-
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/users/login")
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
+
 
 def get_current_user(token: str = Depends(oauth2_scheme)):
     """
@@ -60,3 +42,27 @@ def get_current_user(token: str = Depends(oauth2_scheme)):
     except jwt.PyJWTError as exc:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,
                             detail="Invalid authentication credentials") from exc
+
+
+def get_current_user_roles(token: str = Depends(oauth2_scheme)) -> List[str]:
+    """Extract user roles from JWT token."""
+    try:
+        payload = jwt.decode(token, getenv("JWT_SECRET_KEY"), algorithms=[getenv("JWT_ALGORITHM")])
+        roles: List[str] = payload.get("roles", [])
+        logger.info("Extracted roles in get_current_user_roles: %s", roles)
+        return roles
+    except jwt.PyJWTError as exc:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,
+                            detail="Invalid authentication credentials") from exc
+
+
+def require_role(required_role: str):
+    """Dependency to enforce role-based access control."""
+
+    def role_checker(roles: List[str] = Depends(get_current_user_roles)):
+        logger.info("Roles: %s", roles)
+        if required_role not in roles:
+            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,
+                                detail="Insufficient permissions")  # pylint: disable=line-too-long
+
+    return role_checker
