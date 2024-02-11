@@ -10,3 +10,4 @@ alembic
 ldap3
 pyjwt
 cryptography
+httpx

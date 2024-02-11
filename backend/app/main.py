@@ -2,10 +2,9 @@
 import os
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi import FastAPI
-from pydantic import BaseModel
 from dotenv import load_dotenv, dotenv_values
 from backend.app.controllers import workflow_controller  # pylint: disable=import-error
-from backend.app.routers import user_router  # pylint: disable=import-error
+from backend.app.routers import user_router, automateapi_router  # pylint: disable=import-error
 
 # load environment variables from .env
 load_dotenv(".env")
@@ -30,12 +29,8 @@ app.add_middleware(
 )
 app.include_router(workflow_controller.router)
 app.include_router(user_router.router, prefix="/users", tags=["users"])
+app.include_router(automateapi_router.router, prefix="/automateapi", tags=["automateapi"])
 
-class Workflow(BaseModel):
-    """Workflow model."""
-    id: int
-    name: str
-    creator: str
 
 @app.get("/")
 async def root():
@@ -47,13 +42,3 @@ async def root():
 async def say_hello(name: str):
     """Say hello to a user."""
     return {"message": f"Hello {name}"}
-
-@app.get("/workflows/")
-def read_workflows(limit: int = 10):
-    """Read workflows."""
-    return {"workflows": ["workflow1", "workflow2"], "limit": limit}
-
-@app.post("/workflows/", response_model=Workflow)
-def create_workflow(workflow: Workflow):
-    """Create a workflow."""
-    return workflow
