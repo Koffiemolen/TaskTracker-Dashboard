@@ -4,7 +4,8 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi import FastAPI
 from dotenv import load_dotenv, dotenv_values
 from backend.app.controllers import workflow_controller  # pylint: disable=import-error
-from backend.app.routers import user_router, automateapi_router  # pylint: disable=import-error
+from backend.app.routers import user_router, automateapi_router, database_router  # pylint: disable=import-error
+
 
 # load environment variables from .env
 load_dotenv(".env")
@@ -13,8 +14,6 @@ load_dotenv(".env")
 AD_SERVER = os.getenv('AD_SERVER')
 AD_DOMAIN = os.getenv("AD_DOMAIN")
 AD_SEARCH_BASE = os.getenv("AD_SEARCH_BASE")
-print("AD_SERVER", AD_SERVER)
-print(AD_SERVER, AD_DOMAIN, AD_SEARCH_BASE)
 
 config = dotenv_values(".env")
 print("config ", config)
@@ -27,10 +26,10 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-app.include_router(workflow_controller.router)
+app.include_router(workflow_controller.router, prefix="/workflows", tags=["workflows"])
 app.include_router(user_router.router, prefix="/users", tags=["users"])
 app.include_router(automateapi_router.router, prefix="/automateapi", tags=["automateapi"])
-
+app.include_router(database_router.router, prefix="/automatedb", tags=["automatedb"])
 
 @app.get("/")
 async def root():

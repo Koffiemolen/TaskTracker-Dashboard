@@ -11,3 +11,4 @@ ldap3
 pyjwt
 cryptography
 httpx
+sqlmodel
