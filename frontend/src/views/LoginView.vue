@@ -1,41 +1,58 @@
+// src/components/LoginView.vue
 <template>
   <div class="login-container">
     <h1>Login</h1>
-    <input v-model="username" type="text" placeholder="Username" />
-    <input v-model="password" type="password" placeholder="Password" />
-    <button @click="handleLogin">Login</button>
-    <p v-if="error">{{ error }}</p>
+    <form @submit.prevent="handleLogin">
+      <div>
+        <label for="username">Username:</label>
+        <input id="username" v-model="username" type="text" required>
+      </div>
+      <div>
+        <label for="password">Password:</label>
+        <input id="password" v-model="password" type="password" required>
+      </div>
+      <div>
+        <button type="submit">Login</button>
+      </div>
+      <p v-if="loginError">{{ loginErrorMessage }}</p>
+    </form>
   </div>
 </template>
 
 <script lang="ts">
 import { defineComponent, ref } from 'vue'
-import AuthService from '@/services/AuthService'
+import { useUserStore } from '../store/userStore'
+import { useRouter } from 'vue-router'
 
 export default defineComponent({
-  name: 'LoginView',
   setup () {
+    const userStore = useUserStore()
+    const router = useRouter()
     const username = ref('')
     const password = ref('')
-    const error = ref('')
+    const loginError = ref(false)
+    const loginErrorMessage = ref('')
 
     const handleLogin = async () => {
       try {
-        await AuthService.login(username.value, password.value)
-        // Redirect to home page or dashboard here
-        error.value = ''
-        // Example: router.push('/');
-      } catch (e) {
-        error.value = 'Failed to login'
-        // Handle login error (e.g., show error message)
+        await userStore.login(username.value, password.value)
+        router.push('/')
+      } catch (error: unknown) {
+        loginError.value = true
+        if (error instanceof Error) {
+          loginErrorMessage.value = error.message || 'Failed to login'
+        } else {
+          loginErrorMessage.value = 'Failed to login'
+        }
       }
     }
 
     return {
       username,
       password,
-      error,
-      handleLogin
+      handleLogin,
+      loginError,
+      loginErrorMessage
     }
   }
 })
@@ -43,6 +60,23 @@ export default defineComponent({
 
 <style scoped>
 .login-container {
-  /* Style your login container */
+  max-width: 300px;
+  margin: auto;
+  padding: 20px;
+  text-align: left;
+}
+
+.login-container label {
+  display: block;
+}
+
+.login-container input {
+  width: 100%;
+  padding: 8px;
+  margin: 10px 0;
+}
+
+button {
+  cursor: pointer;
 }
 </style>

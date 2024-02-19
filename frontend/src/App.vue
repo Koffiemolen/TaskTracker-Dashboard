@@ -1,42 +1,30 @@
+// src/App.vue
 <template>
-  <nav>
-    <router-link to="/">Home</router-link> |
-    <router-link to="/about">About</router-link> |
-    <router-link v-if="!isLoggedIn" to="/login">Login</router-link>
-    <button v-if="isLoggedIn" @click="logout">Logout</button>
-  </nav>
-  <router-view/>
+  <div id="app">
+    <nav>
+      <router-link to="/">Home</router-link> |
+      <router-link to="/about">About</router-link> |
+      <router-link v-if="!isLoggedIn" to="/login">Login</router-link>
+      <button v-if="isLoggedIn" @click="logout">Logout</button>
+    </nav>
+    <router-view/>
+  </div>
 </template>
 
 <script lang="ts">
-import { defineComponent, ref, onMounted } from 'vue'
-import AuthService from '@/services/AuthService' // Import your AuthService
+import { defineComponent, computed } from 'vue'
+import { useUserStore } from './store/userStore'
 
 export default defineComponent({
-  name: 'App',
   setup () {
-    const isLoggedIn = ref(false)
+    const userStore = useUserStore()
+    const isLoggedIn = computed(() => userStore.isLoggedIn)
 
-    // Function to check the user's authentication status
-    function checkAuthStatus () {
-      const user = AuthService.getCurrentUser()
-      isLoggedIn.value = !!user // Sets isLoggedIn to true if user is not null
+    const logout = () => {
+      userStore.logout()
+      // Redirect logic...
     }
 
-    // Logout function
-    function logout () {
-      AuthService.logout() // Your AuthService should handle the logout logic
-      isLoggedIn.value = false // Update isLoggedIn state
-      // Optionally, redirect the user to the login page or home page after logout
-      // router.push('/login'); // Uncomment and import router if you want to redirect
-    }
-
-    // Use onMounted lifecycle hook to check auth status when the component mounts
-    onMounted(() => {
-      checkAuthStatus()
-    })
-
-    // Expose the isLoggedIn state and logout function to the template
     return {
       isLoggedIn,
       logout
@@ -45,7 +33,32 @@ export default defineComponent({
 })
 </script>
 
-<!-- Add your styles here -->
 <style>
-/* Your styles */
+/* Style for your app */
+#app {
+  font-family: Avenir, Helvetica, Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-align: center;
+  color: #2c3e50;
+}
+
+nav {
+  padding: 30px;
+}
+
+nav a {
+  font-weight: bold;
+  color: #2c3e50;
+  margin-right: 10px;
+}
+
+nav a.router-link-exact-active {
+  color: #42b983;
+}
+
+button {
+  font-weight: bold;
+  cursor: pointer;
+}
 </style>
