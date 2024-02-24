@@ -64,19 +64,17 @@ export default defineComponent({
   margin: auto;
   padding: 20px;
   text-align: left;
+  background: rgba(255, 255, 255, 0.8); /* Slight transparency */
+  border-radius: 8px;
 }
 
-.login-container label {
-  display: block;
+body {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: url('~@/assets/images/loginscreen/LoginIntro.jpg') no-repeat center center fixed;
+  background-size: cover;
 }
 
-.login-container input {
-  width: 100%;
-  padding: 8px;
-  margin: 10px 0;
-}
-
-button {
-  cursor: pointer;
-}
+/* Add more styles as needed */
 </style>

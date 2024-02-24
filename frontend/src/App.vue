@@ -4,6 +4,7 @@
     <nav>
       <router-link to="/">Home</router-link> |
       <router-link to="/about">About</router-link> |
+      <router-link to="/Dashboard">Dashboard</router-link> |
       <router-link v-if="!isLoggedIn" to="/login">Login</router-link>
       <button v-if="isLoggedIn" @click="logout">Logout</button>
     </nav>
