@@ -5,10 +5,26 @@ from typing import List
 import jwt
 from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
+from backend.app.database import SessionLocal  # pylint: disable=import-error
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/users/login")
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
+
+
+# Dependency
+def get_db():
+    """
+    Get a database session.
+
+    :return: A database session.
+    :rtype: Generator[Session, None, None]
+    """
+    db = SessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()
 
 
 def get_current_user(token: str = Depends(oauth2_scheme)):
