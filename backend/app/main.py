@@ -3,9 +3,11 @@ import os
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi import FastAPI
 from dotenv import load_dotenv, dotenv_values
+from apscheduler.schedulers.asyncio import AsyncIOScheduler
+from apscheduler.triggers.interval import IntervalTrigger
 from backend.app.controllers import workflow_controller  # pylint: disable=import-error
 from backend.app.routers import user_router, automateapi_router, database_router  # pylint: disable=import-error
-
+from backend.app.services.data_aggregation_service import DataAggregationService  # pylint: disable=import-error
 
 # load environment variables from .env
 load_dotenv(".env")
@@ -30,6 +32,24 @@ app.include_router(workflow_controller.router, prefix="/workflows", tags=["workf
 app.include_router(user_router.router, prefix="/users", tags=["users"])
 app.include_router(automateapi_router.router, prefix="/automateapi", tags=["automateapi"])
 app.include_router(database_router.router, prefix="/automatedb", tags=["automatedb"])
+
+
+@app.on_event("startup")
+async def start_scheduler():
+    """Start the scheduler."""
+    # Create an instance of DataAggregationService
+    data_aggregation_service = DataAggregationService(
+        source_db_url=os.getenv('AUTOMATE_DB_CONNECTION_STRING'),
+        target_db_url=os.getenv('TASKTRACKER_DB_CONNECTION_STRING')
+    )
+
+    scheduler = AsyncIOScheduler()
+    scheduler.add_job(
+        data_aggregation_service.transfer_data,  # Use the instance method
+        trigger=IntervalTrigger(seconds=20)  # For example, every hour
+    )
+    scheduler.start()
+
 
 @app.get("/")
 async def root():

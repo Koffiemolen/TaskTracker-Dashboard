@@ -6,8 +6,8 @@ from fastapi import APIRouter, HTTPException, Depends
 from backend.app.services.automate_database_service import DatabaseService  # pylint: disable=import-error
 from backend.app.models.workflow_link_construct import WorkflowLinkConstruct  # pylint: disable=import-error
 
-
 router = APIRouter()
+
 
 @router.get("/data")
 async def get_data(db_service: DatabaseService = Depends(DatabaseService)):
@@ -17,6 +17,7 @@ async def get_data(db_service: DatabaseService = Depends(DatabaseService)):
     """
     data = await db_service.fetch_data("SELECT * FROM [Automate11].[dbo].[workflowlinkconstructs]")
     return {"data": data}
+
 
 @router.get("/workflow-links/", response_model=List[WorkflowLinkConstruct])
 def read_workflow_links():

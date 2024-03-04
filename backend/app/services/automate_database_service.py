@@ -8,6 +8,7 @@ DATABASE_URL = os.getenv('AUTOMATE_DB_CONNECTION_STRING')
 # Create an engine instance
 engine = create_engine(DATABASE_URL, echo=True)
 
+
 class DatabaseService:
     """
     A service for managing and interacting with the database.
