@@ -1,11 +1,13 @@
 <template>
   <div class="card mb-3" style="width: 18rem;">
     <div class="card-body">
-      <h5 class="card-title">{{ workflow.name }}</h5>
-      <h6 class="card-subtitle mb-2 text-muted">Last run: {{ formatDate(workflow.lastRun) }}</h6>
-      <p class="card-text">{{ workflow.taskCount }} tasks</p>
-      <div v-if="workflow.status === 'success'" class="badge bg-success">Success</div>
-      <div v-else-if="workflow.status === 'running'" class="badge bg-warning text-dark">Running</div>
+      <h5 class="card-title">{{ workflow.WorkflowName }}</h5>
+      <h6 class="card-subtitle mb-2 text-muted">Started On: {{ formatDate(workflow.StartedOn) }}</h6>
+      <h6 class="card-subtitle mb-2 text-muted">Ended On: {{ formatDate(workflow.EndedOn) }}</h6>
+      <p class="card-text">{{ workflow.NumberOfTasks }} tasks
+      {{ workflow.ResultText }} </p>
+      <div v-if="workflow.ResultCode === 1" class="badge bg-success">Success</div>
+      <div v-else-if="workflow.ResultCode === 0" class="badge bg-warning text-dark">Running</div>
       <div v-else class="badge bg-danger">Failed</div>
     </div>
   </div>

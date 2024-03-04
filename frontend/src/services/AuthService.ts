@@ -1,7 +1,7 @@
 // src/services/AuthService.ts
 import axios from 'axios'
 
-const API_URL = 'http://127.0.0.1:8000/users/login' // Adjust this URL to your backend endpoint
+const API_URL = 'http://127.0.0.1:8000/users/login'
 
 class AuthService {
   async login (username: string, password: string) {
@@ -14,9 +14,12 @@ class AuthService {
         'Content-Type': 'application/json'
       }
     })
-    if (response.data.accessToken) {
+    console.log('access_token:', response.data.access_token)
+    console.log('accessToken:', response.data.accessToken)
+    if (response.data.access_token) {
       localStorage.setItem('user', JSON.stringify(response.data))
     }
+    console.log('Response:', response.data)
     return response.data
   }
 

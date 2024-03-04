@@ -1,39 +1,63 @@
 // src/services/APIService.ts
+import axios from 'axios'
 
-// Dummy data simulating API response
-const dummyWorkflows = [
-  {
-    id: 1,
-    name: 'PGB-to-CZ',
-    lastRun: new Date().toISOString(),
-    taskCount: 25,
-    status: 'success'
-  },
-  {
-    id: 2,
-    name: 'DWH-to-SAS',
-    lastRun: new Date().toISOString(),
-    taskCount: 15,
-    status: 'running'
-  },
-  {
-    id: 3,
-    name: 'Incaso-to-‘tHaasje',
-    lastRun: new Date().toISOString(),
-    taskCount: 2,
-    status: 'failed'
+// Set up the base URL for your API. Ideally, this should be stored in an environment variable or a config file.
+const BASE_URL = 'http://127.0.0.1:8000'
+
+// Create an Axios instance for making HTTP requests.
+const apiClient = axios.create({
+  baseURL: BASE_URL,
+  headers: {
+    Accept: 'application/json'
   }
-]
+})
+
+// Add a request interceptor to inject the Authorization header into every request
+// apiClient.interceptors.request.use((config) => {
+//   // Attempt to retrieve the user object from local storage
+//   const userStr = localStorage.getItem('user')
+//   const user = userStr ? JSON.parse(userStr) : null
+//
+//   // If the user object exists and contains an access token, add the Authorization header
+//   if (user && user.accessToken) {
+//     config.headers.Authorization = `Bearer ${user.accessToken}`
+//   }
+//
+//   return config
+// }, (error) => {
+//   // Do something with request error
+//   return Promise.reject(error)
+// })
+
+apiClient.interceptors.request.use((config) => {
+  console.log('Intercepting request:', config)
+  const user = JSON.parse(localStorage.getItem('user') || '{}')
+  console.log('User:', user)
+  console.log('Token', user.access_token)
+  if (user && user.access_token) {
+    // config.headers.Authorization = `Bearer ${user.accessToken}`
+    config.headers.Authorization = `Bearer ${user.access_token}`
+    console.log('Added token to headers:', config.headers.Authorization)
+  }
+  // config.headers.Authorization = 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJhZG1pbmlzdHJhdG9yIiwicm9sZXMiOlsiYWRtaW4iXSwiZXhwIjoxNzA5NTgwNjgwfQ.hDVgc3lP9ckPkqm-mL4heQnVYQxA--RyQK4n3GoFHIg'
+  return config
+}, error => Promise.reject(error))
 
 const dummyUserDetails = {
   name: 'Bertje'
 }
 
 const APIService = {
+  // Function to fetch workflows using the authenticated API call
   async getWorkflows () {
-    // Simulate an API call with a delay
-    await new Promise(resolve => setTimeout(resolve, 500))
-    return dummyWorkflows
+    try {
+      const response = await apiClient.get('/workflows/list-all')
+      return response.data // Assuming the API response format is directly usable
+    } catch (error) {
+      console.error('Error fetching workflows:', error)
+      // Proper error handling here
+      throw error
+    }
   },
 
   async getUserDetails () {
@@ -42,7 +66,12 @@ const APIService = {
     return dummyUserDetails
   }
 
-  // Add more dummy methods as needed for testing
+  // You can add more API call functions here as needed.
+  // For example, to fetch user details or to perform other actions that require authentication.
+
+  // async getUserDetails() {...},
+  // async createWorkflow(workflowData) {...},
+  // etc.
 }
 
 export default APIService
