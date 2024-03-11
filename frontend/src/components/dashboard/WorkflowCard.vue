@@ -1,14 +1,28 @@
 <template>
-  <div class="card mb-3" style="width: 18rem;">
-    <div class="card-body">
+  <div class="card">
+    <div class="card-header">
       <h5 class="card-title">{{ workflow.WorkflowName }}</h5>
-      <h6 class="card-subtitle mb-2 text-muted">Started On: {{ formatDate(workflow.StartedOn) }}</h6>
-      <h6 class="card-subtitle mb-2 text-muted">Ended On: {{ formatDate(workflow.EndedOn) }}</h6>
-      <p class="card-text">{{ workflow.NumberOfTasks }} tasks
-      {{ workflow.ResultText }} </p>
-      <div v-if="workflow.ResultCode === 1" class="badge bg-success">Success</div>
-      <div v-else-if="workflow.ResultCode === 0" class="badge bg-warning text-dark">Running</div>
-      <div v-else class="badge bg-danger">Failed</div>
+      <div class="toggle-switch">
+        <input type="checkbox" id="switch{{ workflow.id }}" :checked="workflow.Enabled" @change="emitUpdate">
+        <label for="switch{{ workflow.id }}" class="switch-label">{{ workflow.Enabled ? 'Enabled' : 'Disabled' }}</label>
+      </div>
+    </div>
+    <div class="card-body">
+      <div class="workflow-info">
+        <div>Started On: <time>{{ formatDate(workflow.StartedOn) }}</time></div>
+        <div>Ended On: <time>{{ formatDate(workflow.EndedOn) }}</time></div>
+        <div v-if="workflow.NextLaunchDate">Next Launch On: <time>{{ formatDate(workflow.NextLaunchDate) }}</time></div>
+      </div>
+      <div class="workflow-result">
+        <span :class="`result-badge ${getResultClass(workflow.ResultCode)}`">{{ statusInfo.text }}</span>
+      </div>
+      <div class="workflow-tasks">
+        <span>{{ workflow.ResultText }} tasks</span>
+      </div>
+    </div>
+    <div class="card-footer">
+      <span class="badge result-badge" :class="`result-${workflow.Result}`.toLowerCase()">{{ workflow.Result }}</span>
+      <span class="task-count">{{ workflow.NumberOfTasks }} tasks</span>
     </div>
   </div>
 </template>
@@ -20,8 +34,89 @@ export default {
     workflow: Object
   },
   methods: {
+    emitUpdate () {
+      this.$emit('update-enabled', { id: this.workflow.id, enabled: !this.workflow.Enabled })
+    },
     formatDate (value) {
-      return value ? new Date(value).toLocaleString() : ''
+      // Check if the value is falsy or the date is "January 1, 1900 at 12:00:00 AM"
+      if (!value) {
+        return '-'
+      }
+
+      // Check if the date is "January 1, 1900 at 12:00:00 AM"
+      const defaultDate = new Date('1900-01-01T00:00:00')
+      const date = new Date(value)
+
+      if (date.getTime() === defaultDate.getTime()) {
+        return '-'
+      }
+
+      const options = {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit',
+        hour12: false // Use 24-hour format
+      }
+
+      return date.toLocaleString('nl-NL', options)
+    },
+
+    getResultClass (resultCode) {
+      const statusClassMap = {
+        0: 'result-undefined', // Grey
+        1: 'result-success', // Green
+        2: 'result-failure', // Red
+        3: 'result-aborted', // Yellow
+        4: 'result-stopped', // Blue
+        5: 'result-not-supported', // Grey
+        6: 'result-fatal', // Red
+        7: 'result-timeout', // Yellow
+        8: 'result-halted', // Grey
+        9: 'result-paused', // Blue
+        10: 'result-unhalted', // Green
+        11: 'result-queued', // Dark Grey
+        12: 'result-running', // Green
+        13: 'result-resuming', // Yellow
+        14: 'result-did-not-start', // Grey
+        15: 'result-idle', // Light Grey
+        16: 'result-initializing', // Blue
+        17: 'result-ended', // Grey
+        18: 'result-stopping', // Blue
+        19: 'result-disconnected' // Dark Red or another indicator color
+      }
+
+      return statusClassMap[resultCode] || 'result-unknown' // Default case
+    }
+  },
+  computed: {
+    statusInfo () {
+      const statuses = {
+        0: { text: 'Undefined', class: 'bg-secondary' },
+        1: { text: 'Success', class: 'bg-success' },
+        2: { text: 'Failure', class: 'bg-danger' },
+        3: { text: 'Aborted', class: 'bg-warning' },
+        4: { text: 'Stopped', class: 'bg-info' },
+        5: { text: 'NotSupported', class: 'bg-secondary' },
+        6: { text: 'Fatal', class: 'bg-danger' },
+        7: { text: 'Timeout', class: 'bg-warning' },
+        8: { text: 'Halted', class: 'bg-secondary' },
+        9: { text: 'Paused', class: 'bg-info' },
+        10: { text: 'Unhalted', class: 'bg-primary' },
+        11: { text: 'Queued', class: 'bg-dark' },
+        12: { text: 'Running', class: 'bg-primary' },
+        13: { text: 'ResumingFromFailure', class: 'bg-warning' },
+        14: { text: 'DidNotStart', class: 'bg-secondary' },
+        15: { text: 'Idle', class: 'bg-light text-dark' },
+        16: { text: 'Initializing', class: 'bg-info' },
+        17: { text: 'Ended', class: 'bg-secondary' },
+        18: { text: 'Stopping', class: 'bg-info' },
+        19: { text: 'AgentDisconnected', class: 'bg-danger' }
+      }
+
+      return statuses[this.workflow.ResultCode] || { text: 'Unknown Status', class: 'bg-light text-dark' }
     }
   }
 }
@@ -30,11 +125,144 @@ export default {
 <style scoped>
 .card {
   background: #fff;
-  padding: 20px;
   border-radius: 8px;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-  width: 300px;
-  text-align: center;
+  overflow: hidden; /* Ensure children don't overflow rounded corners */
+  transition: box-shadow 0.3s;
+  width: 300px; /* or 100% for full width on mobile */
+}
+
+.card:hover {
+  box-shadow: 0 8px 12px rgba(0, 0, 0, 0.2);
+}
+
+.card-header {
+  background-color: #f4f5f7;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.5rem 1rem;
+  border-bottom: 1px solid #eaeaea;
+}
+
+.card-title {
+  font-size: 1.25rem;
+  font-weight: bold;
+  color: #333;
+  margin: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.status-indicators {
+  display: flex;
+  align-items: center;
+}
+
+.status-badge {
+  padding: 0.25rem 0.5rem;
+  border-radius: 8px;
+  font-size: 0.8rem;
+  font-weight: bold;
+}
+
+.enabled {
+  background-color: #28a745; /* Bootstrap success color */
+  color: white;
+}
+
+.disabled {
+  background-color: #dc3545; /* Bootstrap danger color */
+  color: white;
+}
+
+.card-body {
+  padding: 1rem;
+}
+
+.workflow-info > div {
+  font-size: 0.9rem;
+  margin-bottom: 0.5rem;
+}
+
+.result-badge {
+  /* Use classes from method getResultClass to set background */
+  display: inline-block;
+  padding: 0.25rem 0.5rem;
+  border-radius: 8px;
+  font-size: 0.8rem;
+  margin-bottom: 1rem;
+}
+
+.workflow-tasks {
+  font-weight: bold;
+  font-size: 0.9rem;
+}
+
+.card {
+  background: #fff;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  margin-bottom: 1rem;
+  overflow: hidden;
+  transition: box-shadow 0.3s ease;
+}
+
+.card:hover {
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.card-header {
+  background-color: #f4f5f7;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.5rem 1rem;
+}
+
+.workflow-title {
+  margin: 0;
+  font-size: 1.25rem;
+}
+
+.status-toggle {
+  /* Styling for the toggle button */
+}
+
+.result-badge {
+  /* Styling based on the result of the last run */
+}
+
+.workflow-details {
+  padding: 1rem;
+  font-size: 0.9rem;
+  border-top: 1px solid #eee; /* subtle separator */
+}
+
+.workflow-tasks {
+  padding: 0 1rem 1rem;
+  font-weight: bold;
+}
+
+.card-body {
+  padding: 20px;
+}
+
+.card-title {
+  margin-bottom: 0.5rem;
+  font-size: 1.4rem;
+}
+
+.card-subtitle {
+  color: #666;
+  font-size: 0.95rem;
+  margin-bottom: 0.25rem;
+}
+
+.card-text {
+  font-size: 0.9rem;
+  margin-bottom: 1rem;
 }
 
 .card h3 {
@@ -49,5 +277,151 @@ export default {
 
 .status-icons {
   margin: 10px 0;
+}
+
+.switch {
+  position: relative;
+  display: inline-block;
+  width: 60px;
+  height: 34px;
+  margin-left: 10px; /* Adjust space between badge and switch */
+}
+
+.switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: #ccc;
+  -webkit-transition: .4s;
+  transition: .4s;
+}
+
+.slider:before {
+  position: absolute;
+  content: "";
+  height: 26px;
+  width: 26px;
+  left: 4px;
+  bottom: 4px;
+  background-color: white;
+  -webkit-transition: .4s;
+  transition: .4s;
+}
+
+input:checked + .slider {
+  background-color: #2196F3;
+}
+
+input:focus + .slider {
+  box-shadow: 0 0 1px #2196F3;
+}
+
+input:checked + .slider:before {
+  -webkit-transform: translateX(26px);
+  -ms-transform: translateX(26px);
+  transform: translateX(26px);
+}
+
+.slider.round {
+  border-radius: 34px;
+}
+
+.slider.round:before {
+  border-radius: 50%;
+}
+
+.status-indicators {
+  display: flex;
+  align-items: center;
+  justify-content: space-between; /* This will need adjustments based on your layout */
+  margin-bottom: 1rem;
+}
+.result-undefined {
+  background-color: #6c757d; /* Bootstrap's secondary color */
+  color: white;
+}
+
+.result-success {
+  background-color: #28a745; /* Bootstrap's success color */
+  color: white;
+}
+
+.result-failure {
+  background-color: #dc3545; /* Bootstrap's danger color */
+  color: white;
+}
+
+.result-aborted {
+  background-color: #ffc107; /* Bootstrap's warning color */
+  color: black;
+}
+
+.result-stopped {
+  background-color: #17a2b8; /* Bootstrap's info color */
+  color: white;
+}
+
+.result-not-supported {
+  background-color: #6c757d; /* Bootstrap's secondary color */
+  color: white;
+}
+
+.result-fatal {
+  background-color: #dc3545; /* Bootstrap's danger color */
+  color: white;
+}
+
+.result-timeout {
+  background-color: #ffc107; /* Bootstrap's warning color */
+  color: black;
+}
+
+.result-halted {
+  background-color: #6c757d; /* Bootstrap's secondary color */
+  color: white;
+}
+
+.result-paused {
+  background-color: #17a2b8; /* Bootstrap's info color */
+  color: white;
+}
+
+.result-unhalted {
+  background-color: #28a745; /* Bootstrap's success color */
+  color: white;
+}
+
+.result-queued {
+  background-color: #343a40; /* Bootstrap's dark color */
+  color: white;
+}
+
+.result-running {
+  background-color: #28a745; /* Bootstrap's success color */
+  color: white;
+}
+
+.result-resuming {
+  background-color: #ffc107; /* Bootstrap's warning color */
+  color: black;
+}
+
+.result-did-not-start {
+  background-color: #6c757d; /* Bootstrap's secondary color */
+  color: white;
+}
+
+.result-idle {
+  background-color: #f8f9fa; /* Bootstrap's light color */
+  color: black;
 }
 </style>

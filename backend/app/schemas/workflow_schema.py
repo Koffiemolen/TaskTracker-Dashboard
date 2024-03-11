@@ -1,5 +1,5 @@
 """ This module contains the schema for a workflow. """
-import datetime
+from datetime import datetime
 from pydantic import BaseModel
 
 
@@ -34,7 +34,7 @@ class WorkflowSchema(BaseModel):
         SuccessCount (int): The count of successful tasks in the workflow.
         FailureCount (int): The count of failed tasks in the workflow.
         NumberOfTasks (int): The number of tasks in the workflow.
-        UpdatedOn(datetime.datetime): The date and time when the workflow was last updated.
+        UpdatedcdOn(datetime.datetime): The date and time when the workflow was last updated.
 
         Config (class):
             A nested class containing configuration settings for the class.
@@ -50,23 +50,25 @@ class WorkflowSchema(BaseModel):
     CompletionState: int
     Notes: str
     CreatedBy: str
-    CreatedOn: datetime.datetime
-    ModifiedOn: datetime.datetime
-    LastModifiedOn: datetime.datetime
+    CreatedOn: datetime
+    ModifiedOn: datetime
+    LastModifiedOn: datetime
     Version: int
-    VersionDate: datetime.datetime
+    VersionDate: datetime
     Empty: int
     Enabled: bool
     Removed: bool
     ResultCode: int
     ResultText: str
-    StartedOn: datetime.datetime
-    EndedOn: datetime.datetime
+    StartedOn: datetime
+    EndedOn: datetime
     LockedBy: str
     SuccessCount: int
     FailureCount: int
     NumberOfTasks: int
-    UpdatedOn: datetime.datetime
+    UpdatedOn: datetime
+    NextLaunchDate: datetime | None = None
+    LastLaunchDate: datetime | None = None
 
     class Config:  # pylint: disable=too-few-public-methods
         """A class representing the configuration for the ORM mode.

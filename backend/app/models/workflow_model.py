@@ -37,3 +37,5 @@ class Workflow(Base):  # pylint: disable=too-few-public-methods
     FailureCount = Column(Integer, nullable=True)
     NumberOfTasks = Column(Integer, nullable=True)
     UpdatedOn = Column(DateTime, nullable=True, default=datetime.datetime.utcnow)
+    NextLaunchDate = Column(DateTime, nullable=True)
+    LastLaunchDate = Column(DateTime, nullable=True)
