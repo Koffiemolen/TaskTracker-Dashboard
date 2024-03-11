@@ -1,40 +1,26 @@
-# workflow_controller.py
-"""
-This module contains the router and endpoint definitions for managing workflows.
-"""
+""" This module contains the workflow controller. """
 from typing import List
-from fastapi import APIRouter, Depends
-from fastapi.security import HTTPBearer
+from fastapi import Depends, APIRouter
 from sqlalchemy.orm import Session
-from backend.app.models.workflow_model import Workflow  # pylint: disable=import-error
 from backend.app.schemas.workflow_schema import WorkflowSchema  # pylint: disable=import-error
 from backend.app.dependencies.dependencies import get_db  # pylint: disable=import-error
+from backend.app.services.workflow_service import WorkflowService  # pylint: disable=import-error
 
-bearer_scheme = HTTPBearer()
+
 router = APIRouter()
 
 
-@router.get("/list")
-def read_workflows():
-    """Fetches and returns the list of workflows
+@router.get("/list-all", response_model=List[WorkflowSchema])
+def list_all_workflows(db: Session = Depends(get_db)):
+    """
+    List all workflows.
 
-    This endpoint fetches and returns a list of existing workflows.
+    Args:
+        db: The database session to use for querying the workflows.
 
     Returns:
-        dict: A dictionary with a list of workflows.
+        A list of all workflows stored in the database.
     """
-
-    # Logic to fetch and return workflow data
-    return {"workflows": ["workflow1", "workflow2"]}
-
-
-@router.get("/list-all", response_model=List[WorkflowSchema])
-def list_all_workflows(db: Session = Depends(get_db), token: str = Depends(bearer_scheme)):  # pylint: disable=unused-argument
-    """
-    :param db: The database session to use for querying the workflows.
-    :param token: The security token used for authentication.
-    :return: A list of all workflows stored in the database.
-
-    """
-    workflows = db.query(Workflow).all()
+    workflow_service = WorkflowService(db)
+    workflows = workflow_service.get_all_workflows()
     return workflows

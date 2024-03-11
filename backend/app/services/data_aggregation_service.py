@@ -296,6 +296,117 @@ WHEN NOT MATCHED BY source THEN
         # Execute the transfer using run_in_threadpool for synchronous operations
         await run_in_threadpool(self._sync_transfer_data, transfer_sql)
 
+    async def transfer_data_tasks(self):
+        """Transfers data for the tasks."""
+        transfer_sql = text("""MERGE INTO [TaskTracker].[dbo].[tasks] AS target
+USING (
+    SELECT 
+        wic.ID,
+        wic.WorkflowID,
+        ac.ResourceName,
+        CASE 
+            WHEN wic.ConstructType = 2 THEN 'Task'
+            WHEN wic.ConstructType = 4 THEN 'Trigger'
+            WHEN wic.ConstructType = 19 THEN 'Wait'
+            WHEN wic.ConstructType = 13 THEN 'Evaluation'
+            ELSE CAST(wic.ConstructType AS NVARCHAR(20))
+        END AS ConstructTypeName,
+        wic.ItemType,
+        wic.ConstructID,
+        wic.ConstructType,
+        wic.Expression,
+        ac.ResourceType,
+        ac.CompletionState,
+        ac.Notes,
+        ac.CreatedBy,
+        ac.CreatedOn,
+        ac.ModifiedOn,
+        ac.Version,
+        ac.VersionDate,
+        ac.Empty,
+        ac.Enabled,
+        ac.Removed,
+        ac.ResultCode,
+        ac.ResultText,
+        ac.StartedOn,
+        ac.EndedOn,
+        ac.LockedBy,
+        ac.SuccessCount,
+        ac.FailureCount
+    FROM [Automate11].[dbo].[workflowitemconstructs] wic
+    LEFT JOIN [Automate11].[dbo].[automateconstructs] ac ON ac.ResourceID = wic.ConstructID
+) AS source
+ON target.ID = source.ID -- or the appropriate key for matching
+
+-- For Inserts
+WHEN NOT MATCHED BY TARGET THEN
+    INSERT (ID, WorkflowID, ResourceName, ConstructTypeName, ItemType, ConstructID, ConstructType, Expression, ResourceType, CompletionState, Notes, CreatedBy, CreatedOn, ModifiedOn, Version, VersionDate, Empty, Enabled, Removed, ResultCode, ResultText, StartedOn, EndedOn, LockedBy, SuccessCount, FailureCount)
+    VALUES (source.ID, source.WorkflowID, source.ResourceName, source.ConstructTypeName, source.ItemType, source.ConstructID, source.ConstructType, source.Expression, source.ResourceType, source.CompletionState, source.Notes, source.CreatedBy, source.CreatedOn, source.ModifiedOn, source.Version, source.VersionDate, source.Empty, source.Enabled, source.Removed, source.ResultCode, source.ResultText, source.StartedOn, source.EndedOn, source.LockedBy, source.SuccessCount, source.FailureCount)
+
+-- For Updates (adjust conditions as needed)
+WHEN MATCHED AND (
+		target.WorkflowID <> source.WorkflowID or
+		target.ResourceName <> source.ResourceName or
+		target.ConstructTypeName <> source.ConstructTypeName or
+		target.ItemType <> source.ItemType or
+		target.ConstructID <> source.ConstructID or
+		target.ConstructType <> source.ConstructType or
+		target.Expression <> source.Expression or
+		target.ResourceType <> source.ResourceType or
+		target.CompletionState <> source.CompletionState or
+		CAST(target.Notes AS NVARCHAR(MAX)) <> CAST(source.Notes AS NVARCHAR(MAX)) OR
+		target.CreatedBy <> source.CreatedBy or
+		target.CreatedOn <> source.CreatedOn or
+		target.ModifiedOn <> source.ModifiedOn or
+		target.Version <> source.Version or
+		target.VersionDate <> source.VersionDate or
+		target.Empty <> source.Empty or
+		target.Enabled <> source.Enabled or
+		target.Removed <> source.Removed or
+		target.ResultCode <> source.ResultCode or
+		CAST(target.ResultText AS NVARCHAR(MAX)) <> CAST(source.ResultText AS NVARCHAR(MAX)) OR
+		target.StartedOn <> source.StartedOn or
+		target.EndedOn <> source.EndedOn or
+		target.LockedBy <> source.LockedBy or
+		target.SuccessCount <> source.SuccessCount or
+		target.FailureCount <> source.FailureCount
+)THEN 
+    UPDATE SET
+		target.WorkflowID = source.WorkflowID,
+		target.ResourceName = source.ResourceName,
+		target.ConstructTypeName = source.ConstructTypeName,
+		target.ItemType = source.ItemType,
+		target.ConstructID = source.ConstructID,
+		target.ConstructType = source.ConstructType,
+		target.Expression = source.Expression,
+		target.ResourceType = source.ResourceType,
+		target.CompletionState = source.CompletionState,
+		target.Notes = source.Notes,
+		target.CreatedBy = source.CreatedBy,
+		target.CreatedOn = source.CreatedOn,
+		target.ModifiedOn = source.ModifiedOn,
+		target.Version = source.Version,
+		target.VersionDate = source.VersionDate,
+		target.Empty = source.Empty,
+		target.Enabled = source.Enabled,
+		target.Removed = source.Removed,
+		target.ResultCode = source.ResultCode,
+		target.ResultText = source.ResultText,
+		target.StartedOn = source.StartedOn,
+		target.EndedOn = source.EndedOn,
+		target.LockedBy = source.LockedBy,
+		target.SuccessCount = source.SuccessCount,
+		target.FailureCount = source.FailureCount
+
+-- For Delete (if applicable)
+WHEN NOT MATCHED BY SOURCE THEN
+    DELETE
+;
+""")
+
+        # Execute the transfer using run_in_threadpool for synchronous operations
+        await run_in_threadpool(self._sync_transfer_data, transfer_sql)
+
     def _sync_transfer_data(self, sql_statement):
         """Synchronizes the transfer of data."""
         with self.target_session_local() as session:

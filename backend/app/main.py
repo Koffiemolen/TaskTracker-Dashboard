@@ -40,7 +40,7 @@ security = HTTPBearer()
 
 @app.on_event("startup")
 async def start_scheduler():
-    """Start the scheduler."""
+    """Start the scheduler and add tasks with staggered start times."""
     # Create an instance of DataAggregationService
     data_aggregation_service = DataAggregationService(
         source_db_url=os.getenv('AUTOMATE_DB_CONNECTION_STRING'),
@@ -48,12 +48,33 @@ async def start_scheduler():
     )
 
     scheduler = AsyncIOScheduler()
-    scheduler.add_job(
-        data_aggregation_service.transfer_data,  # Use the instance method
-        trigger=IntervalTrigger(seconds=20)  # For example, every hour
-    )
-    scheduler.start()
 
+    # Retrieve workflow data
+    scheduler.add_job(
+        data_aggregation_service.transfer_data_workflow,
+        trigger=IntervalTrigger(seconds=7)
+    )
+
+    # Retrieve trigger data
+    scheduler.add_job(
+        data_aggregation_service.transfer_data_triggers,
+        trigger=IntervalTrigger(seconds=33)
+    )
+
+    # Retrieve agent data
+    scheduler.add_job(
+        data_aggregation_service.transfer_data_agents,
+        trigger=IntervalTrigger(seconds=21)
+    )
+
+    # transfer_data_tasks
+    # Retrieve task data
+    scheduler.add_job(
+        data_aggregation_service.transfer_data_tasks,
+        trigger=IntervalTrigger(seconds=6)
+    )
+
+    scheduler.start()
 
 @app.get("/")
 async def root():
