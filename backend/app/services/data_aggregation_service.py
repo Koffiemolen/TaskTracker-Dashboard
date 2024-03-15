@@ -311,6 +311,7 @@ USING (
             WHEN wic.ConstructType = 13 THEN 'Evaluation'
             ELSE CAST(wic.ConstructType AS NVARCHAR(20))
         END AS ConstructTypeName,
+        wic.AgentID,
         wic.ItemType,
         wic.ConstructID,
         wic.ConstructType,
@@ -340,8 +341,8 @@ ON target.ID = source.ID -- or the appropriate key for matching
 
 -- For Inserts
 WHEN NOT MATCHED BY TARGET THEN
-    INSERT (ID, WorkflowID, ResourceName, ConstructTypeName, ItemType, ConstructID, ConstructType, Expression, ResourceType, CompletionState, Notes, CreatedBy, CreatedOn, ModifiedOn, Version, VersionDate, Empty, Enabled, Removed, ResultCode, ResultText, StartedOn, EndedOn, LockedBy, SuccessCount, FailureCount)
-    VALUES (source.ID, source.WorkflowID, source.ResourceName, source.ConstructTypeName, source.ItemType, source.ConstructID, source.ConstructType, source.Expression, source.ResourceType, source.CompletionState, source.Notes, source.CreatedBy, source.CreatedOn, source.ModifiedOn, source.Version, source.VersionDate, source.Empty, source.Enabled, source.Removed, source.ResultCode, source.ResultText, source.StartedOn, source.EndedOn, source.LockedBy, source.SuccessCount, source.FailureCount)
+    INSERT (ID, WorkflowID, ResourceName, ConstructTypeName, AgentID, ItemType, ConstructID, ConstructType, Expression, ResourceType, CompletionState, Notes, CreatedBy, CreatedOn, ModifiedOn, Version, VersionDate, Empty, Enabled, Removed, ResultCode, ResultText, StartedOn, EndedOn, LockedBy, SuccessCount, FailureCount)
+    VALUES (source.ID, source.WorkflowID, source.ResourceName, source.ConstructTypeName, source.AgentID, source.ItemType, source.ConstructID, source.ConstructType, source.Expression, source.ResourceType, source.CompletionState, source.Notes, source.CreatedBy, source.CreatedOn, source.ModifiedOn, source.Version, source.VersionDate, source.Empty, source.Enabled, source.Removed, source.ResultCode, source.ResultText, source.StartedOn, source.EndedOn, source.LockedBy, source.SuccessCount, source.FailureCount)
 
 -- For Updates (adjust conditions as needed)
 WHEN MATCHED AND (
@@ -351,6 +352,7 @@ WHEN MATCHED AND (
 		target.ItemType <> source.ItemType or
 		target.ConstructID <> source.ConstructID or
 		target.ConstructType <> source.ConstructType or
+		target.AgentID <> source.AgentID or
 		target.Expression <> source.Expression or
 		target.ResourceType <> source.ResourceType or
 		target.CompletionState <> source.CompletionState or
@@ -378,6 +380,7 @@ WHEN MATCHED AND (
 		target.ItemType = source.ItemType,
 		target.ConstructID = source.ConstructID,
 		target.ConstructType = source.ConstructType,
+		target.AgentID = source.AgentID,
 		target.Expression = source.Expression,
 		target.ResourceType = source.ResourceType,
 		target.CompletionState = source.CompletionState,

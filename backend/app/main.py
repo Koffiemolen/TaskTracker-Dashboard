@@ -13,6 +13,7 @@ load_dotenv(".env")
 from backend.app.routers import user_router, automateapi_router, database_router  # pylint: disable=import-error, wrong-import-position
 from backend.app.services.data_aggregation_service import DataAggregationService  # pylint: disable=import-error, wrong-import-position
 from backend.app.controllers import workflow_controller  # pylint: disable=import-error, wrong-import-position
+from backend.app.controllers import task_controller  # pylint: disable=import-error, wrong-import-position
 
 
 # access environment variables using os.getenv
@@ -32,9 +33,11 @@ app.add_middleware(
     allow_headers=["*"],
 )
 app.include_router(workflow_controller.router, prefix="/workflows", tags=["workflows"])
+app.include_router(task_controller.router, prefix="/tasks", tags=["tasks"])
 app.include_router(user_router.router, prefix="/users", tags=["users"])
 app.include_router(automateapi_router.router, prefix="/automateapi", tags=["automateapi"])
 app.include_router(database_router.router, prefix="/automatedb", tags=["automatedb"])
+
 
 security = HTTPBearer()
 

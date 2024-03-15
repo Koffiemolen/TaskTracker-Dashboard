@@ -8,13 +8,14 @@ class TaskSchema(BaseModel):
 
     :class:`TaskSchema`
 
-    A class representing the schema for a workflow.
+    A class representing the schema for a task.
 
     """
     ID: str
     WorkflowID: str | None = None
     ResourceName: str | None = None
     ConstructTypeName: str | None = None
+    AgentID: str | None = None
     ItemType: int | None = None
     ConstructID: str | None = None
     ConstructType: int | None = None
