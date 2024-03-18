@@ -1,42 +1,56 @@
+<!--WorkflowCard.vue-->
 <template>
-  <div class="card">
+  <div class="card" :class="{ 'card-enabled': workflow.Enabled, 'card-disabled': !workflow.Enabled, 'is-running': isRunning,
+       'is-successful': isSuccessful,
+       'has-error': hasError }">
     <div class="card-header">
-      <h5 class="card-title">{{ workflow.WorkflowName }}</h5>
-      <div class="toggle-switch">
-        <input type="checkbox" id="switch{{ workflow.id }}" :checked="workflow.Enabled" @change="emitUpdate">
-        <label for="switch{{ workflow.id }}" class="switch-label">{{ workflow.Enabled ? 'Enabled' : 'Disabled' }}</label>
-      </div>
+      <h5 class="card-title" :title="workflow.WorkflowName">{{ truncatedWorkflowName }}</h5>
     </div>
     <div class="card-body">
       <div class="workflow-info">
-        <div>Started On: <time>{{ formatDate(workflow.StartedOn) }}</time></div>
-        <div>Ended On: <time>{{ formatDate(workflow.EndedOn) }}</time></div>
-        <div v-if="workflow.NextLaunchDate">Next Launch On: <time>{{ formatDate(workflow.NextLaunchDate) }}</time></div>
+        <div>Started: <time>{{ formatDate(workflow.StartedOn) }}</time></div>
+        <div>Ended: <time>{{ formatDate(workflow.EndedOn) }}</time></div>
+        <div v-if="workflow.NextLaunchDate">Next Launch: <time>{{ formatDate(workflow.NextLaunchDate) }}</time></div>
       </div>
-      <div class="workflow-result">
-        <span :class="`result-badge ${getResultClass(workflow.ResultCode)}`">{{ statusInfo.text }}</span>
-      </div>
-      <div class="workflow-tasks">
-        <span>{{ workflow.ResultText }} tasks</span>
+      <div class="workflow-results">
+        <h3 class="workflow-results-header">Workflow Results:</h3>
+        <span>{{ workflow.ResultText }}</span>
       </div>
     </div>
     <div class="card-footer">
-      <span class="badge result-badge" :class="`result-${workflow.Result}`.toLowerCase()">{{ workflow.Result }}</span>
-      <span class="task-count">{{ workflow.NumberOfTasks }} tasks</span>
+      <div class="workflow-result">
+        <span :class="`result-badge ${getResultClass(workflow.ResultCode)}`">{{ statusInfo.text }}</span>
+      </div>
+      <div>
+        <span class="badge result-badge" :class="`result-${workflow.Result}`.toLowerCase()">{{ workflow.Result }}</span>
+      </div>
+      <button @click="runWorkflow" :disabled="isButtonDisabled">Run</button>
+      <div class="task-count-wrapper">
+        <span class="task-count">{{ workflow.NumberOfTasks }} tasks</span>
+      </div>
     </div>
   </div>
 </template>
 
 <script>
+import APIService from '@/services/APIService' // Ensure this import is present
+import { defineComponent } from 'vue' // Import defineComponent for better TypeScript support
+import { useToast } from 'vue-toastification'
+
 export default {
   name: 'WorkflowCard',
   props: {
     workflow: Object
   },
+  data () {
+    return {
+      isRunning: false,
+      isSuccessful: false,
+      hasError: false,
+      isButtonDisabled: false
+    }
+  },
   methods: {
-    emitUpdate () {
-      this.$emit('update-enabled', { id: this.workflow.id, enabled: !this.workflow.Enabled })
-    },
     formatDate (value) {
       // Check if the value is falsy or the date is "January 1, 1900 at 12:00:00 AM"
       if (!value) {
@@ -52,12 +66,6 @@ export default {
       }
 
       const options = {
-        year: 'numeric',
-        month: 'long',
-        day: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit',
-        second: '2-digit',
         hour12: false // Use 24-hour format
       }
 
@@ -89,9 +97,59 @@ export default {
       }
 
       return statusClassMap[resultCode] || 'result-unknown' // Default case
+    },
+
+    // async runWorkflow () {
+    //   this.isRunning = true // Start by setting the running state to true
+    //   this.isSuccessful = false // Reset success state
+    //   this.hasError = false // Reset error state
+    //
+    //   try {
+    //     const result = await APIService.runWorkflow(this.workflow.ResourceID)
+    //     this.isRunning = false
+    //     this.isSuccessful = true // Update success state
+    //     console.log(`Workflow ${this.workflow.ResourceID} started successfully. Result:`, result)
+    //     this.$emit('workflow-started', { workflowId: this.workflow.ResourceID, result })
+    //     this.$emit('show-toast', { message: 'Workflow started successfully!', type: 'success' })
+    //
+    //     // Update UI or component state as needed based on success
+    //   } catch (error) {
+    //     console.error(`Error starting workflow ${this.workflow.ResourceID}:`, error)
+    //     this.$emit('workflow-start-error', { workflowId: this.workflow.ResourceID, error: error })
+    //     this.$emit('show-toast', { message: `Error starting workflow: ${error.message}`, type: 'error' })
+    //     // Update UI or component state as needed based on error
+    //   }
+    // }
+    async runWorkflow () {
+      this.isButtonDisabled = true
+
+      setTimeout(() => {
+        this.isButtonDisabled = false
+      }, 5000)
+
+      this.isRunning = true
+      try {
+        const result = await APIService.runWorkflow(this.workflow.ResourceID)
+        this.isRunning = false
+        this.isSuccessful = true
+        console.log(`Workflow ${this.workflow.ResourceID} started successfully. Result:`, result)
+        this.$showToast('Workflow started successfully!', 'success')
+      } catch (error) {
+        this.isRunning = false
+        this.hasError = true
+        console.error(`Error starting workflow ${this.workflow.ResourceID}:`, error)
+        this.$showToast('Error starting workflow.', 'error')
+      }
     }
   },
   computed: {
+    truncatedWorkflowName () {
+      const maxLength = 25
+      if (this.workflow.WorkflowName.length > maxLength) {
+        return `${this.workflow.WorkflowName.substring(0, maxLength)}...`
+      }
+      return this.workflow.WorkflowName
+    },
     statusInfo () {
       const statuses = {
         0: { text: 'Undefined', class: 'bg-secondary' },
@@ -143,6 +201,7 @@ export default {
   align-items: center;
   padding: 0.5rem 1rem;
   border-bottom: 1px solid #eaeaea;
+  //height: 30px;
 }
 
 .card-title {
@@ -153,6 +212,19 @@ export default {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+.card-footer {
+  display: flex;
+  align-items: center; /* This will align flex items vertically in the center */
+  justify-content: space-between; /* This spaces out the flex items horizontally */
+  padding: 0.5rem 1rem;
+}
+
+/* Ensure that the wrappers for the badge and task count do not have any styles
+   that would disrupt their alignment, such as different margin or padding values. */
+.task-count-wrapper {
+  text-align: right;
 }
 
 .status-indicators {
@@ -167,23 +239,34 @@ export default {
   font-weight: bold;
 }
 
-.enabled {
-  background-color: #28a745; /* Bootstrap success color */
-  color: white;
+.card-enabled {
+  border-left: 5px solid #28a745; /* A green border for enabled */
 }
 
-.disabled {
-  background-color: #dc3545; /* Bootstrap danger color */
-  color: white;
+.card-disabled {
+  background-color: #e9ecef; /* A light grey background for disabled */
+  border-left: 5px solid #6c757d; /* A grey border for disabled */
 }
 
 .card-body {
-  padding: 1rem;
+  text-align: left; /* Aligns text and inline elements to the right */
 }
 
 .workflow-info > div {
   font-size: 0.9rem;
   margin-bottom: 0.5rem;
+}
+
+.is-running {
+  /* Style for when the workflow is running */
+}
+
+.is-successful {
+  /* Style for when the workflow completes successfully */
+}
+
+.has-error {
+  /* Style for when there's an error running the workflow */
 }
 
 .result-badge {
@@ -195,9 +278,16 @@ export default {
   margin-bottom: 1rem;
 }
 
-.workflow-tasks {
-  font-weight: bold;
-  font-size: 0.9rem;
+.workflow-results-header {
+  font-size: 1.2rem;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+}
+
+.workflow-results {
+  font-size: 0.8rem;
+  border-top: 2px solid #ddd; /* Subtle separator */
+  padding-top: 1rem; /* Create some space around the results */
 }
 
 .card {
@@ -226,10 +316,6 @@ export default {
   font-size: 1.25rem;
 }
 
-.status-toggle {
-  /* Styling for the toggle button */
-}
-
 .result-badge {
   /* Styling based on the result of the last run */
 }
@@ -238,15 +324,6 @@ export default {
   padding: 1rem;
   font-size: 0.9rem;
   border-top: 1px solid #eee; /* subtle separator */
-}
-
-.workflow-tasks {
-  padding: 0 1rem 1rem;
-  font-weight: bold;
-}
-
-.card-body {
-  padding: 20px;
 }
 
 .card-title {

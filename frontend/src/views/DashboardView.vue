@@ -1,3 +1,4 @@
+<!--DashboardView.vue-->
 <template>
   <div id="dashboard">
     <DashboardSidebar />
@@ -6,9 +7,12 @@
       <section class="workflow-cards-container">
         <WorkflowCard
           v-for="workflow in workflows"
-          :key="workflow.id"
+          :key="workflow.resourceId"
           :workflow="workflow"
           @update-enabled="toggleWorkflowEnabled"
+          @workflow-started="handleWorkflowStarted"
+          @workflow-start-error="handleWorkflowStartError"
+          @show-toast="showToast"
         />
       </section>
     </div>
@@ -35,9 +39,19 @@ export default {
     const toggleWorkflowEnabled = (payload) => {
       const workflow = workflows.value.find(w => w.id === payload.id)
       if (workflow) {
-        workflow.Enabled = payload.enabled
+        workflow.enabled = payload.enabled
         // Optionally, send an update to the server here if needed.
       }
+    }
+
+    const handleWorkflowStarted = ({ workflowId, result }) => {
+      console.log(`Workflow ${workflowId} started successfully. Result:`, result)
+      // Add any logic you want to execute when a workflow starts successfully
+    }
+
+    const handleWorkflowStartError = ({ workflowId, error }) => {
+      console.error(`Error starting workflow ${workflowId}:`, error)
+      // Add any logic you want to execute in case of an error
     }
 
     onMounted(async () => {
@@ -53,7 +67,19 @@ export default {
     return {
       workflows,
       userDetails,
+      handleWorkflowStarted,
+      handleWorkflowStartError,
       toggleWorkflowEnabled
+    }
+  },
+  methods: {
+    showToast ({ message, type }) {
+      if (type === 'success') {
+        this.$toast.success(message)
+      } else if (type === 'error') {
+        this.$toast.error(message)
+      }
+      // Add more conditions if you have other toast types
     }
   }
 }

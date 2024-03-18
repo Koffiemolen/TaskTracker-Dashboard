@@ -47,7 +47,11 @@ const dummyUserDetails = {
   name: 'Bertje'
 }
 
+export const dummyGlobalTriggering = {
+  active: true
+}
 const APIService = {
+
   // Function to fetch workflows using the authenticated API call
   async getWorkflows () {
     try {
@@ -55,6 +59,19 @@ const APIService = {
       return response.data // Assuming the API response format is directly usable
     } catch (error) {
       console.error('Error fetching workflows:', error)
+      // Proper error handling here
+      throw error
+    }
+  },
+
+  // Function to run a workflow using the authenticated API call, input is the workflow ID in
+  // url automateapi/workflows/<workflow_id>/run
+  async runWorkflow (workflowId: string) {
+    try {
+      const response = await apiClient.post(`/automateapi/workflows/${workflowId}/run`)
+      return response.data // Assuming the API response format is directly usable
+    } catch (error) {
+      console.error('Error running workflow:', error)
       // Proper error handling here
       throw error
     }
