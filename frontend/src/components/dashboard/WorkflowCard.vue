@@ -1,8 +1,10 @@
-<!--WorkflowCard.vue-->
+<!--// src/components/dashboard/WorkflowCard.vue-->
 <template>
   <div class="card" :class="{ 'card-enabled': workflow.Enabled, 'card-disabled': !workflow.Enabled, 'is-running': isRunning,
        'is-successful': isSuccessful,
        'has-error': hasError }">
+<!--    <button @click="showModal = true">View Details</button>-->
+    <button @click="handleWorkflowClick">View Details</button>
     <div class="card-header">
       <h5 class="card-title" :title="workflow.WorkflowName">{{ truncatedWorkflowName }}</h5>
     </div>
@@ -29,18 +31,51 @@
         <span class="task-count">{{ workflow.NumberOfTasks }} tasks</span>
       </div>
     </div>
+    <WorkflowModal
+      :visible="showModal"
+      :workflowData="workflow"
+      :workflowMdata="workflowMetadata"
+      @update:visible="showModal = $event"
+    />
   </div>
 </template>
 
 <script>
-import APIService from '@/services/APIService' // Ensure this import is present
-import { defineComponent } from 'vue' // Import defineComponent for better TypeScript support
-import { useToast } from 'vue-toastification'
-
-export default {
+import APIService from '@/services/APIService'
+import { defineComponent, ref } from 'vue'
+import WorkflowModal from '@/components/dashboard/WorkflowMetadataModal.vue'
+export default defineComponent({
   name: 'WorkflowCard',
+  components: {
+    WorkflowModal
+  },
   props: {
-    workflow: Object
+    workflow: {
+      type: Object,
+      required: true
+    }
+  },
+  setup (props) {
+    const showModal = ref(false)
+    // initialize the workflowMetadata ref with an empty array
+    const workflowMetadata = ref([])
+
+    const getWorkflowMetaData = async () => {
+      try {
+        const result = await APIService.getWorkflowMetaData(props.workflow.ResourceID)
+        console.log(`Metadata retrieved ${props.workflow.ResourceID} successfully. Result:`, result)
+        workflowMetadata.value = result
+      } catch (error) {
+        console.error(`Error retrieving workflow metadata ${props.workflow.ResourceID}:`, error)
+      }
+    }
+
+    async function handleWorkflowClick () {
+      await getWorkflowMetaData()
+      showModal.value = true
+    }
+
+    return { showModal, handleWorkflowClick, workflowMetadata }
   },
   data () {
     return {
@@ -51,6 +86,11 @@ export default {
     }
   },
   methods: {
+    // handleWorkflowClick () {
+    //   console.log('Emitting workflow-click with:', this.workflow)
+    //   this.$emit('workflow-click', this.workflow)
+    // },
+
     formatDate (value) {
       // Check if the value is falsy or the date is "January 1, 1900 at 12:00:00 AM"
       if (!value) {
@@ -99,27 +139,6 @@ export default {
       return statusClassMap[resultCode] || 'result-unknown' // Default case
     },
 
-    // async runWorkflow () {
-    //   this.isRunning = true // Start by setting the running state to true
-    //   this.isSuccessful = false // Reset success state
-    //   this.hasError = false // Reset error state
-    //
-    //   try {
-    //     const result = await APIService.runWorkflow(this.workflow.ResourceID)
-    //     this.isRunning = false
-    //     this.isSuccessful = true // Update success state
-    //     console.log(`Workflow ${this.workflow.ResourceID} started successfully. Result:`, result)
-    //     this.$emit('workflow-started', { workflowId: this.workflow.ResourceID, result })
-    //     this.$emit('show-toast', { message: 'Workflow started successfully!', type: 'success' })
-    //
-    //     // Update UI or component state as needed based on success
-    //   } catch (error) {
-    //     console.error(`Error starting workflow ${this.workflow.ResourceID}:`, error)
-    //     this.$emit('workflow-start-error', { workflowId: this.workflow.ResourceID, error: error })
-    //     this.$emit('show-toast', { message: `Error starting workflow: ${error.message}`, type: 'error' })
-    //     // Update UI or component state as needed based on error
-    //   }
-    // }
     async runWorkflow () {
       this.isButtonDisabled = true
 
@@ -139,6 +158,19 @@ export default {
         this.hasError = true
         console.error(`Error starting workflow ${this.workflow.ResourceID}:`, error)
         this.$showToast('Error starting workflow.', 'error')
+      }
+    },
+    async getWorkflowMetaData () {
+      try {
+        this.isRunning = true
+        const result = await APIService.getWorkflowMetaData(this.workflow.ResourceID)
+        this.isRunning = false
+        this.isSuccessful = true
+        console.log(`Metadata retrieved ${this.workflow.ResourceID} successfully. Result:`, result)
+      } catch (error) {
+        this.isRunning = false
+        this.hasError = true
+        console.error(`Error retrieving workflow metadata ${this.workflow.ResourceID}:`, error)
       }
     }
   },
@@ -177,7 +209,7 @@ export default {
       return statuses[this.workflow.ResultCode] || { text: 'Unknown Status', class: 'bg-light text-dark' }
     }
   }
-}
+})
 </script>
 
 <style scoped>

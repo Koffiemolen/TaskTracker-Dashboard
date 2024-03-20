@@ -12,23 +12,6 @@ const apiClient = axios.create({
   }
 })
 
-// Add a request interceptor to inject the Authorization header into every request
-// apiClient.interceptors.request.use((config) => {
-//   // Attempt to retrieve the user object from local storage
-//   const userStr = localStorage.getItem('user')
-//   const user = userStr ? JSON.parse(userStr) : null
-//
-//   // If the user object exists and contains an access token, add the Authorization header
-//   if (user && user.accessToken) {
-//     config.headers.Authorization = `Bearer ${user.accessToken}`
-//   }
-//
-//   return config
-// }, (error) => {
-//   // Do something with request error
-//   return Promise.reject(error)
-// })
-
 apiClient.interceptors.request.use((config) => {
   console.log('Intercepting request:', config)
   const user = JSON.parse(localStorage.getItem('user') || '{}')
@@ -57,6 +40,18 @@ const APIService = {
     try {
       const response = await apiClient.get('/workflows/list-all')
       return response.data // Assuming the API response format is directly usable
+    } catch (error) {
+      console.error('Error fetching workflows:', error)
+      // Proper error handling here
+      throw error
+    }
+  },
+
+  // Function to fetch workflows using the authenticated API call
+  async getWorkflowMetaData (workflowId: string) {
+    try {
+      const response = await apiClient.get(`/tasks/enriched/${workflowId}`)
+      return response.data
     } catch (error) {
       console.error('Error fetching workflows:', error)
       // Proper error handling here

@@ -4,13 +4,15 @@
     <div class="user-greeting">
       <h2>Welcome {{ username }}</h2>
       <p>Senior Admin</p>
-      <button @click="showSuccessToast">Show Success Toast</button>
-      <button @click="showErrorToast">Show Error Toast</button>
+<!--      <button @click="showSuccessToast">Show Success Toast</button>-->
+<!--      <button @click="showErrorToast">Show Error Toast</button>-->
       <button @click="toggleGlobalTrigger">Toggle Global Trigger</button>
     </div>
-    <div v-if="!globalTrigger" class="global-trigger-warning">
-      Global trigger is disabled.
-    </div>
+    <transition name="fade">
+      <div v-if="!globalTrigger" class="global-trigger-warning">
+        Global trigger is disabled.
+      </div>
+    </transition>
   </header>
 </template>
 
@@ -29,7 +31,6 @@ export default defineComponent({
         // Optional toast options
       })
     }
-
     const showErrorToast = () => {
       toast.error('This is an error toast!', {
         // Optional toast options
@@ -71,7 +72,25 @@ header {
   color: #333;
 }
 
+/* Glow effect transitions */
+.fade-glow-enter-active {
+  animation: fadeGlow 2s ease-in-out infinite;
+}
+
+@keyframes fadeGlow {
+  0%, 100% {
+    opacity: 0.5;
+    box-shadow: 0 0 5px #ff0000, 0 0 10px #ff0000, 0 0 15px #ff0000, 0 0 20px #ff0000;
+  }
+  50% {
+    opacity: 1;
+    box-shadow: 0 0 10px #ff0000, 0 0 20px #ff0000, 0 0 30px #ff0000, 0 0 40px #ff0000, 0 0 50px #ff0000, 0 0 60px #ff0000, 0 0 70px #ff0000;
+  }
+}
+
 .global-trigger-warning {
+  transition: opacity 1s ease-in-out;
+  /* Your existing styles for .global-trigger-warning */
   background-color: #ffdddd;
   color: #d00;
   width: 100%;

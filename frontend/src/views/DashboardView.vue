@@ -1,4 +1,4 @@
-<!--DashboardView.vue-->
+<!--// src/views/DashboardView.vue-->
 <template>
   <div id="dashboard">
     <DashboardSidebar />
@@ -12,11 +12,13 @@
           @update-enabled="toggleWorkflowEnabled"
           @workflow-started="handleWorkflowStarted"
           @workflow-start-error="handleWorkflowStartError"
+          @workflow-click="handleWorkflowSelection"
           @show-toast="showToast"
         />
       </section>
     </div>
   </div>
+  <WorkflowMetadataModal :workflow="selectedWorkflow" v-model:dialog="isModalOpen" />
 </template>
 
 <script>
@@ -25,17 +27,30 @@ import APIService from '@/services/APIService'
 import DashboardSidebar from '@/components/dashboard/DashboardSidebar.vue'
 import DashboardHeader from '@/components/dashboard/DashboardHeader.vue'
 import WorkflowCard from '@/components/dashboard/WorkflowCard.vue'
+import WorkflowMetadataModal from '@/components/dashboard/WorkflowMetadataModal.vue'
 
 export default {
   name: 'DashboardView',
   components: {
     DashboardSidebar,
     DashboardHeader,
-    WorkflowCard
+    WorkflowCard,
+    WorkflowMetadataModal
   },
   setup () {
     const workflows = ref([])
     const userDetails = ref({ name: 'Loading...' })
+    const selectedWorkflow = ref(null)
+    const isModalOpen = ref(false)
+    const selectWorkflow = (workflow) => {
+      selectedWorkflow.value = workflow
+      isModalOpen.value = true
+    }
+    const handleWorkflowSelection = (workflow) => {
+      console.log('Opening modal for:', workflow)
+      selectedWorkflow.value = workflow
+      isModalOpen.value = true
+    }
     const toggleWorkflowEnabled = (payload) => {
       const workflow = workflows.value.find(w => w.id === payload.id)
       if (workflow) {
@@ -67,8 +82,12 @@ export default {
     return {
       workflows,
       userDetails,
+      selectedWorkflow,
+      isModalOpen,
+      selectWorkflow,
       handleWorkflowStarted,
       handleWorkflowStartError,
+      handleWorkflowSelection,
       toggleWorkflowEnabled
     }
   },
@@ -81,6 +100,9 @@ export default {
       }
       // Add more conditions if you have other toast types
     }
+  //   handleWorkflowSelection (workflow) {
+  //     this.selectWorkflow(workflow)
+  //   }
   }
 }
 </script>

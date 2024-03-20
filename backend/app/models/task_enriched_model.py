@@ -54,7 +54,7 @@ class EnrichedTask(Base):  # pylint: disable=too-few-public-methods
     TriggerID = Column(String(38), nullable=True)
     TriggerName = Column(String(255), nullable=True)
     TriggerType = Column(Integer, nullable=True)
-    TriggerSource = Column(Integer, nullable=True)
+    TriggerSource = Column(String(500), nullable=True)
     TriggerScheduleType = Column(Integer, nullable=True)
     TriggerLastLaunchDate = Column(DateTime, nullable=True)
     TriggerNextLaunchDate = Column(DateTime, nullable=True)
