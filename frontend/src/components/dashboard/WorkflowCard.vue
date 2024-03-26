@@ -1,22 +1,38 @@
-<!--// src/components/dashboard/WorkflowCard.vue-->
 <template>
-  <div class="card" :class="{ 'card-enabled': workflow.Enabled, 'card-disabled': !workflow.Enabled, 'is-running': isRunning,
-       'is-successful': isSuccessful,
-       'has-error': hasError }">
-<!--    <button @click="showModal = true">View Details</button>-->
-    <button @click="handleWorkflowClick">View Details</button>
+  <div class="card clickable" @click="handleWorkflowClick" :class="{
+    'card-enabled': workflow.Enabled,
+    'card-disabled': !workflow.Enabled,
+    'is-running': isRunning,
+    'is-successful': isSuccessful,
+    'has-error': hasError }">
     <div class="card-header">
       <h5 class="card-title" :title="workflow.WorkflowName">{{ truncatedWorkflowName }}</h5>
     </div>
     <div class="card-body">
       <div class="workflow-info">
-        <div>Started: <time>{{ formatDate(workflow.StartedOn) }}</time></div>
-        <div>Ended: <time>{{ formatDate(workflow.EndedOn) }}</time></div>
-        <div v-if="workflow.NextLaunchDate">Next Launch: <time>{{ formatDate(workflow.NextLaunchDate) }}</time></div>
+        <div class="workflow-dates">
+          <div class="date-info">
+            <strong>Last run:</strong> <time>{{ formatDate(workflow.LastLaunchDate) }}</time>
+          </div>
+          <div class="date-info">
+            <strong>Manual start:</strong> <time>{{ formatDate(workflow.StartedOn) }}</time>
+          </div>
+          <div class="date-info">
+            <strong>Ended:</strong> <time>{{ formatDate(workflow.EndedOn) }}</time>
+          </div>
+          <div class="date-info">
+            <strong>Next Launch:</strong>
+            <time v-if="workflow.NextLaunchDate">{{ formatDate(workflow.NextLaunchDate) }}</time>
+            <span v-else class="no-data-placeholder">Not scheduled</span>
+          </div>
+        </div>
+        <div class="workflow-runtime" v-if="runtime">
+          <strong>Runtime:</strong> <span>{{ runtime }}</span>
+        </div>
       </div>
       <div class="workflow-results">
-        <h3 class="workflow-results-header">Workflow Results:</h3>
-        <span>{{ workflow.ResultText }}</span>
+        <h4 class="workflow-results-header">Results</h4>
+        <p>{{ workflow.ResultText }}</p>
       </div>
     </div>
     <div class="card-footer">
@@ -57,7 +73,6 @@ export default defineComponent({
   },
   setup (props) {
     const showModal = ref(false)
-    // initialize the workflowMetadata ref with an empty array
     const workflowMetadata = ref([])
 
     const getWorkflowMetaData = async () => {
@@ -71,8 +86,11 @@ export default defineComponent({
     }
 
     async function handleWorkflowClick () {
+      console.log('Card clicked')
       await getWorkflowMetaData()
       showModal.value = true
+      // Inside handleWorkflowClick
+      // emit('show-modal', true)
     }
 
     return { showModal, handleWorkflowClick, workflowMetadata }
@@ -86,10 +104,21 @@ export default defineComponent({
     }
   },
   methods: {
-    // handleWorkflowClick () {
-    //   console.log('Emitting workflow-click with:', this.workflow)
-    //   this.$emit('workflow-click', this.workflow)
-    // },
+    formatRuntime (milliseconds) {
+      const seconds = Math.floor(milliseconds / 1000)
+      const minutes = Math.floor(seconds / 60)
+      const hours = Math.floor(minutes / 60)
+
+      const minutesPart = minutes % 60
+      const secondsPart = seconds % 60
+
+      let result = ''
+      if (hours > 0) result += `${hours} hour${hours > 1 ? 's' : ''}, `
+      if (minutesPart > 0) result += `${minutesPart} minute${minutesPart > 1 ? 's' : ''}, `
+      result += `${secondsPart} second${secondsPart > 1 ? 's' : ''}`
+
+      return result
+    },
 
     formatDate (value) {
       // Check if the value is falsy or the date is "January 1, 1900 at 12:00:00 AM"
@@ -175,6 +204,16 @@ export default defineComponent({
     }
   },
   computed: {
+    runtime () {
+      if (!this.workflow.StartedOn || !this.workflow.EndedOn) return null
+
+      const startedOn = new Date(this.workflow.StartedOn)
+      const endedOn = new Date(this.workflow.EndedOn)
+      const difference = endedOn - startedOn // Difference in milliseconds
+
+      return this.formatRuntime(difference)
+    },
+
     truncatedWorkflowName () {
       const maxLength = 25
       if (this.workflow.WorkflowName.length > maxLength) {
@@ -250,7 +289,23 @@ export default defineComponent({
   display: flex;
   align-items: center; /* This will align flex items vertically in the center */
   justify-content: space-between; /* This spaces out the flex items horizontally */
-  padding: 0.5rem 1rem;
+  flex-wrap: wrap; /* Allow the items to wrap onto the next line on small screens */
+  //padding: 0.5rem 1rem;
+}
+
+.card-footer > div, .card-footer > button {
+  display: flex;
+  align-items: center;
+}
+
+/* You might want to add some margin to separate the items if they are too close */
+.card-footer > div, .card-footer > button {
+  margin-right: 1rem; /* Adjust as needed */
+}
+
+/* Reset the margin for the last child to prevent extra spacing on the right */
+.card-footer > :last-child {
+  margin-right: 0;
 }
 
 /* Ensure that the wrappers for the badge and task count do not have any styles
@@ -275,6 +330,12 @@ export default defineComponent({
   border-left: 5px solid #28a745; /* A green border for enabled */
 }
 
+.date-info {
+  display: flex;
+  justify-content: space-between;
+  align-items: center; /* This centers the items vertically */
+}
+
 .card-disabled {
   background-color: #e9ecef; /* A light grey background for disabled */
   border-left: 5px solid #6c757d; /* A grey border for disabled */
@@ -284,9 +345,43 @@ export default defineComponent({
   text-align: left; /* Aligns text and inline elements to the right */
 }
 
+.clickable {
+  cursor: pointer;
+}
+
+.clickable:hover {
+  box-shadow: 0 8px 12px rgba(0, 0, 0, 0.2);
+}
+
 .workflow-info > div {
-  font-size: 0.9rem;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: 0.7rem;
+}
+
+.workflow-info > div {
+  line-height: 0.3; /* Adjust this value as needed */
+  margin-bottom: 0.8rem;
+}
+
+.workflow-dates div, .workflow-runtime {
   margin-bottom: 0.5rem;
+}
+
+.workflow-results {
+  margin-top: 1.5rem;
+}
+
+.workflow-results-header {
+  margin-bottom: 0.75rem;
+}
+
+.no-data-placeholder {
+  color: #999; /* Example: a lighter color indicating placeholder or missing data */
+}
+
+.card-body {
+  font-size: 0.9rem;
 }
 
 .is-running {
@@ -363,17 +458,6 @@ export default defineComponent({
   font-size: 1.4rem;
 }
 
-.card-subtitle {
-  color: #666;
-  font-size: 0.95rem;
-  margin-bottom: 0.25rem;
-}
-
-.card-text {
-  font-size: 0.9rem;
-  margin-bottom: 1rem;
-}
-
 .card h3 {
   color: #333;
   font-size: 1.2rem;
@@ -384,46 +468,10 @@ export default defineComponent({
   font-size: 0.9rem;
 }
 
-.status-icons {
-  margin: 10px 0;
-}
-
-.switch {
-  position: relative;
-  display: inline-block;
-  width: 60px;
-  height: 34px;
-  margin-left: 10px; /* Adjust space between badge and switch */
-}
-
 .switch input {
   opacity: 0;
   width: 0;
   height: 0;
-}
-
-.slider {
-  position: absolute;
-  cursor: pointer;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background-color: #ccc;
-  -webkit-transition: .4s;
-  transition: .4s;
-}
-
-.slider:before {
-  position: absolute;
-  content: "";
-  height: 26px;
-  width: 26px;
-  left: 4px;
-  bottom: 4px;
-  background-color: white;
-  -webkit-transition: .4s;
-  transition: .4s;
 }
 
 input:checked + .slider {

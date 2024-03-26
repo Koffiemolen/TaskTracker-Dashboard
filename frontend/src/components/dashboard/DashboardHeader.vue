@@ -6,7 +6,7 @@
       <p>Senior Admin</p>
 <!--      <button @click="showSuccessToast">Show Success Toast</button>-->
 <!--      <button @click="showErrorToast">Show Error Toast</button>-->
-      <button @click="toggleGlobalTrigger">Toggle Global Trigger</button>
+<!--      <button @click="toggleGlobalTrigger">Toggle Global Trigger</button>-->
     </div>
     <transition name="fade">
       <div v-if="!globalTrigger" class="global-trigger-warning">
@@ -72,11 +72,6 @@ header {
   color: #333;
 }
 
-/* Glow effect transitions */
-.fade-glow-enter-active {
-  animation: fadeGlow 2s ease-in-out infinite;
-}
-
 @keyframes fadeGlow {
   0%, 100% {
     opacity: 0.5;
@@ -90,7 +85,6 @@ header {
 
 .global-trigger-warning {
   transition: opacity 1s ease-in-out;
-  /* Your existing styles for .global-trigger-warning */
   background-color: #ffdddd;
   color: #d00;
   width: 100%;

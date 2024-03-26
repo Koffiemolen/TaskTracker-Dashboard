@@ -14,11 +14,16 @@
           @workflow-start-error="handleWorkflowStartError"
           @workflow-click="handleWorkflowSelection"
           @show-toast="showToast"
+          @show-modal="handleShowModal"
         />
       </section>
     </div>
   </div>
-  <WorkflowMetadataModal :workflow="selectedWorkflow" v-model:dialog="isModalOpen" />
+  <WorkflowMetadataModal
+    :workflow="selectedWorkflow"
+    v-model:dialog="isModalOpen"
+    @update:visible="isModalOpen = $event"
+  />
 </template>
 
 <script>
@@ -48,9 +53,19 @@ export default {
     }
     const handleWorkflowSelection = (workflow) => {
       console.log('Opening modal for:', workflow)
+      console.log('Previous modal state:', isModalOpen.value)
       selectedWorkflow.value = workflow
       isModalOpen.value = true
+      console.log('New modal state:', isModalOpen.value)
     }
+
+    // const handleShowModal = (value) => {
+    //   console.log('Handle show modal:', value)
+    //   console.log('Previous modal state(in handleShowModal):', isModalOpen.value)
+    //   isModalOpen.value = value
+    //   console.log('New modal state(in handleShowModal):', isModalOpen.value)
+    // }
+
     const toggleWorkflowEnabled = (payload) => {
       const workflow = workflows.value.find(w => w.id === payload.id)
       if (workflow) {
@@ -100,9 +115,11 @@ export default {
       }
       // Add more conditions if you have other toast types
     }
-  //   handleWorkflowSelection (workflow) {
-  //     this.selectWorkflow(workflow)
-  //   }
+
+    // handleShowModal (value) {
+    //   console.log(`Modal visibility changing to: ${value}`)
+    //   this.isModalOpen = value
+    // }
   }
 }
 </script>
@@ -132,13 +149,6 @@ export default {
   .workflow-cards-container {
     justify-content: center; /* center cards on smaller screens */
   }
-}
-
-.workflow-cards {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 20px;
-  justify-content: center;
 }
 
 @media (max-width: 768px) {
