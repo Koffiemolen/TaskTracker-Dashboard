@@ -59,13 +59,6 @@ export default {
       console.log('New modal state:', isModalOpen.value)
     }
 
-    // const handleShowModal = (value) => {
-    //   console.log('Handle show modal:', value)
-    //   console.log('Previous modal state(in handleShowModal):', isModalOpen.value)
-    //   isModalOpen.value = value
-    //   console.log('New modal state(in handleShowModal):', isModalOpen.value)
-    // }
-
     const toggleWorkflowEnabled = (payload) => {
       const workflow = workflows.value.find(w => w.id === payload.id)
       if (workflow) {

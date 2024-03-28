@@ -9,5 +9,5 @@ export default {
 </script>
 
 <style scoped>
-/* Your search bar styles */
+
 </style>

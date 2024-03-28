@@ -3,10 +3,8 @@
     <DashboardSearch />
     <div class="user-greeting">
       <h2>Welcome {{ username }}</h2>
-      <p>Senior Admin</p>
-<!--      <button @click="showSuccessToast">Show Success Toast</button>-->
-<!--      <button @click="showErrorToast">Show Error Toast</button>-->
-<!--      <button @click="toggleGlobalTrigger">Toggle Global Trigger</button>-->
+<!--      <p>{{ userDetails.role }}</p>-->
+      <p>admin</p>
     </div>
     <transition name="fade">
       <div v-if="!globalTrigger" class="global-trigger-warning">

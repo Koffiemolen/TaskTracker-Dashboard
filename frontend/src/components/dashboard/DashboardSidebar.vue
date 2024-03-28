@@ -38,6 +38,4 @@ nav a {
 nav a:hover {
   background: #555;
 }
-
-/* Add more styles as needed */
 </style>

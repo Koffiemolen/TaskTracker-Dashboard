@@ -1,3 +1,4 @@
+<!--/src/components/dashboard/WorkflowMetadataModal.vue-->
 <template>
   <div v-if="visible" class="modal" @click.self="closeModal">
     <div class="modal-content" @click.stop>
@@ -77,9 +78,11 @@ export default defineComponent({
 }
 
 .modal-content {
-  background-color: #fff;
+  background-color: #f4f5f7; /* Matching card header */
+  color: #333; /* Text color */
   margin: auto;
-  padding: 20px;
+  padding: 0.5rem 1rem; /* Padding */
+  margin-top: 0; /* Remove default margin */
   border: 1px solid #888;
   width: 90%;
   max-width: 600px;

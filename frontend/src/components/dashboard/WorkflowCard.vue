@@ -30,17 +30,10 @@
           <strong>Runtime:</strong> <span>{{ runtime }}</span>
         </div>
       </div>
-      <div class="workflow-results">
-        <h4 class="workflow-results-header">Results</h4>
-        <p>{{ workflow.ResultText }}</p>
-      </div>
     </div>
     <div class="card-footer">
       <div class="workflow-result">
-        <span :class="`result-badge ${getResultClass(workflow.ResultCode)}`">{{ statusInfo.text }}</span>
-      </div>
-      <div>
-        <span class="badge result-badge" :class="`result-${workflow.Result}`.toLowerCase()">{{ workflow.Result }}</span>
+        <span :class="`result-badge ${getResultClass(workflow.ResultCode)}`" :data-tippy-content="workflow.ResultText">{{ statusInfo.text }}</span>
       </div>
       <button @click="runWorkflow" :disabled="isButtonDisabled">Run</button>
       <div class="task-count-wrapper">
@@ -60,6 +53,8 @@
 import APIService from '@/services/APIService'
 import { defineComponent, ref } from 'vue'
 import WorkflowModal from '@/components/dashboard/WorkflowMetadataModal.vue'
+import tippy from 'tippy.js'
+import 'tippy.js/dist/tippy.css' // Don't forget to import the CSS
 export default defineComponent({
   name: 'WorkflowCard',
   components: {
@@ -85,6 +80,11 @@ export default defineComponent({
       }
     }
 
+    tippy('.result-badge', {
+      content (reference) {
+        return reference.getAttribute('data-title') // Assuming you're using the `data-title` for the tooltip content
+      }
+    })
     async function handleWorkflowClick () {
       console.log('Card clicked')
       await getWorkflowMetaData()
@@ -397,12 +397,28 @@ export default defineComponent({
 }
 
 .result-badge {
-  /* Use classes from method getResultClass to set background */
   display: inline-block;
   padding: 0.25rem 0.5rem;
   border-radius: 8px;
   font-size: 0.8rem;
   margin-bottom: 1rem;
+  position: relative;
+}
+
+.result-badge:hover::after {
+  content: attr(data-title); /* Use a data attribute for dynamic content if necessary */
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%) translateY(0);
+  white-space: nowrap;
+  z-index: 1;
+  background-color: black;
+  color: white;
+  padding: 5px;
+  border-radius: 6px;
+  font-size: 0.8rem;
+  overflow: auto;
 }
 
 .workflow-results-header {
@@ -441,10 +457,6 @@ export default defineComponent({
 .workflow-title {
   margin: 0;
   font-size: 1.25rem;
-}
-
-.result-badge {
-  /* Styling based on the result of the last run */
 }
 
 .workflow-details {

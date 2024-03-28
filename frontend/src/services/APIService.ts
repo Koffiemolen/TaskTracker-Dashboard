@@ -22,17 +22,18 @@ apiClient.interceptors.request.use((config) => {
     config.headers.Authorization = `Bearer ${user.access_token}`
     console.log('Added token to headers:', config.headers.Authorization)
   }
-  // config.headers.Authorization = 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJhZG1pbmlzdHJhdG9yIiwicm9sZXMiOlsiYWRtaW4iXSwiZXhwIjoxNzA5NTgwNjgwfQ.hDVgc3lP9ckPkqm-mL4heQnVYQxA--RyQK4n3GoFHIg'
   return config
 }, error => Promise.reject(error))
 
 const dummyUserDetails = {
-  name: 'Bertje'
+  name: 'Administrator',
+  role: 'Admin'
 }
 
 export const dummyGlobalTriggering = {
   active: true
 }
+
 const APIService = {
 
   // Function to fetch workflows using the authenticated API call
@@ -77,9 +78,6 @@ const APIService = {
     await new Promise(resolve => setTimeout(resolve, 500))
     return dummyUserDetails
   }
-
-  // You can add more API call functions here as needed.
-  // For example, to fetch user details or to perform other actions that require authentication.
 
   // async getUserDetails() {...},
   // async createWorkflow(workflowData) {...},

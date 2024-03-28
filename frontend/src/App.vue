@@ -20,12 +20,12 @@ import { useRouter } from 'vue-router'
 export default defineComponent({
   setup () {
     const userStore = useUserStore()
-    const router = useRouter() // Use useRouter to get access to the router instance
+    const router = useRouter()
 
     const isLoggedIn = computed(() => userStore.isLoggedIn)
 
     const logout = () => {
-      userStore.logout() // Assuming this method clears the authentication state
+      userStore.logout()
       router.push('/login') // Redirect the user to the login page
     }
 
@@ -38,7 +38,6 @@ export default defineComponent({
 </script>
 
 <style>
-/* Style for your app */
 #app {
   font-family: Avenir, Helvetica, Arial, sans-serif;
   -webkit-font-smoothing: antialiased;
