@@ -6,16 +6,27 @@ This project is a full-stack application with a Python FastAPI backend and a Vue
 
 - `/backend`: Contains all the Python FastAPI components.
   - `/app`: Primary application code.
+    - `/alembic`: Database migration scripts.
     - `/controllers`: Controller modules for application logic.
-    - `/services`: Business logic and interaction with external services/APIs.
+    - `/dependencies`: Dependency injection modules.
     - `/models`: ORM models for database interaction.
+    - `/routers`: API route definitions.
     - `/schemas`: Request and response serialization models.
-    - `/tests`: Test cases for backend components.
+    - `/services`: Business logic and interaction with external services/APIs.
+  - `/tests`: Test cases for backend components.
     - `requirements.txt`: Python dependencies.
     - `Dockerfile`: Docker configuration for backend.
     - `.env`: Environment variables (not committed to version control).
 - `/frontend`: Vue.js codebase.
   - `/src`: Source code with Vue components and services.
+    - `/assets`: Static assets like images and styles.
+    - `/components`: Reusable Vue components.
+    - `/plugins`: Vue plugins like Vue Router and Vuex.
+    - `/router`: Vue Router configuration.
+    - `/services`: API service modules.
+    - `/store`: Vuex store configuration.
+    - `/utils`: Utility functions.
+    - `/views`: Vue components for different views.
   - `/tests`: Vue unit and integration tests.
   - `package.json`: Node.js project dependencies.
   - `Dockerfile`: Docker configuration for frontend.
