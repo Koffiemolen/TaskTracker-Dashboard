@@ -11,7 +11,7 @@ class Task(Base):  # pylint: disable=too-few-public-methods
     """
     This is the Task class involving different details about a task.
     """
-    __tablename__ = 'tasks'
+    __tablename__ = 'tasksinfo'
 
     ID = Column(String(38), primary_key=True)
     WorkflowID = Column(String(38), nullable=True)

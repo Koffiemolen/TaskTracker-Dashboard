@@ -54,30 +54,36 @@ async def start_scheduler():
 
     scheduler = AsyncIOScheduler()
 
-    # Retrieve workflow data
+    # Retrieve server settings data
     scheduler.add_job(
-        data_aggregation_service.transfer_data_workflow,
-        trigger=IntervalTrigger(seconds=7)
+        data_aggregation_service.transfer_automate_server_settings,
+        trigger=IntervalTrigger(seconds=3)
     )
 
-    # Retrieve trigger data
-    scheduler.add_job(
-        data_aggregation_service.transfer_data_triggers,
-        trigger=IntervalTrigger(seconds=33)
-    )
-
-    # Retrieve agent data
-    scheduler.add_job(
-        data_aggregation_service.transfer_data_agents,
-        trigger=IntervalTrigger(seconds=21)
-    )
-
-    # transfer_data_tasks
-    # Retrieve task data
-    scheduler.add_job(
-        data_aggregation_service.transfer_data_tasks,
-        trigger=IntervalTrigger(seconds=6)
-    )
+    # # Retrieve workflow data
+    # scheduler.add_job(
+    #     data_aggregation_service.transfer_data_workflow,
+    #     trigger=IntervalTrigger(seconds=7)
+    # )
+    #
+    # # Retrieve trigger data
+    # scheduler.add_job(
+    #     data_aggregation_service.transfer_data_triggers,
+    #     trigger=IntervalTrigger(seconds=33)
+    # )
+    #
+    # # Retrieve agent data
+    # scheduler.add_job(
+    #     data_aggregation_service.transfer_data_agents,
+    #     trigger=IntervalTrigger(seconds=21)
+    # )
+    #
+    # # transfer_data_tasks
+    # # Retrieve task data
+    # scheduler.add_job(
+    #     data_aggregation_service.transfer_data_tasks,
+    #     trigger=IntervalTrigger(seconds=6)
+    # )
 
     scheduler.start()
 

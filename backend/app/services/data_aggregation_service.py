@@ -410,6 +410,167 @@ WHEN NOT MATCHED BY SOURCE THEN
         # Execute the transfer using run_in_threadpool for synchronous operations
         await run_in_threadpool(self._sync_transfer_data, transfer_sql)
 
+
+    async def transfer_automate_server_settings(self):
+        """Transfers data for the server settings."""
+        transfer_sql = text(""" MERGE INTO [TaskTracker].[dbo].[automateserversettings] AS target
+USING (
+	SELECT [ID]
+      ,[UseIPFilters]
+      ,[BlockListType]
+      ,[BlockedIPList]
+      ,[DefaultIPFiltersAllow]
+      ,[UseSSL]
+      ,[CertStoreLocation]
+      ,[CertStoreName]
+      ,[CertSearchType]
+      ,[CertSearchValue]
+      ,[SMTPServer]
+      ,[SMTPPort]
+      ,[SMTPUser]
+      ,[SMTPPassword]
+      ,[ErrorNotifyEmailToAddress]
+      ,[ErrorNotifyEmailFromAddress]
+      ,[ErrorRunTaskName]
+      ,[UseLowestCompletionState]
+      ,[LowestCompletionState]
+      ,[TrimTimeFrame]
+      ,[TrimCount]
+      ,[InstancesTrimTimeFrame]
+      ,[InstancesTrimCount]
+      ,[TaskStepsTrimTimeFrame]
+      ,[TaskStepsTrimCount]
+      ,[MaxRunningWorkflows]
+      ,[WorkflowDelayAfterStartup]
+      ,[DefaultStaging]
+      ,[Versioned]
+      ,[VersionBehavior]
+      ,[VersionTrimValue]
+      ,[GlobalTriggering]
+      ,[EnableLockout]
+      ,[LockoutPeriod]
+      ,[AttemptPeriod]
+      ,[AttemptCount]
+      ,[EnableTimeout]
+      ,[TimeoutPeriod]
+      ,[TimeoutUserIDs]
+      ,[DisableConcurrentLogin]
+      ,[EnableAPI]
+      ,[EnableStepLogging]
+      ,[AuditEventsTrimTimeFrame]
+      ,[AuditEventsTrimCount]
+      ,[PCMMinimumLength]
+      ,[PCMAllowLowercase]
+      ,[PCMMinimumLowercase]
+      ,[PCMAllowUppercase]
+      ,[PCMMinimumUppercase]
+      ,[PCMAllowNumbers]
+      ,[PCMMinimumNumbers]
+      ,[PCMAllowSpecCharacters]
+      ,[PCMMinimumSpecCharacters]
+      ,[PCMEnablePasswordExpiration]
+      ,[PCMPasswordExpirationPeriod]
+      ,[PCMEnablePasswordHistory]
+      ,[PCMEnforcePasswordHistory]
+      ,[EnableCustomActions]
+  FROM [Automate11].[dbo].[serverproperties]
+) AS source 
+ON target.ID = source.ID
+
+-- For Inserts
+WHEN NOT MATCHED BY TARGET THEN
+    INSERT ([ID]
+      ,[UseIPFilters]
+      ,[BlockListType]
+      ,[BlockedIPList]
+      ,[DefaultIPFiltersAllow]
+      ,[UseSSL]
+      ,[CertStoreLocation]
+      ,[CertStoreName]
+      ,[CertSearchType]
+      ,[CertSearchValue]
+      ,[SMTPServer]
+      ,[SMTPPort]
+      ,[SMTPUser]
+      ,[SMTPPassword]
+      ,[ErrorNotifyEmailToAddress]
+      ,[ErrorNotifyEmailFromAddress]
+      ,[ErrorRunTaskName]
+      ,[UseLowestCompletionState]
+      ,[LowestCompletionState]
+      ,[TrimTimeFrame]
+      ,[TrimCount]
+      ,[InstancesTrimTimeFrame]
+      ,[InstancesTrimCount]
+      ,[TaskStepsTrimTimeFrame]
+      ,[TaskStepsTrimCount]
+      ,[MaxRunningWorkflows]
+      ,[WorkflowDelayAfterStartup]
+      ,[DefaultStaging]
+      ,[Versioned]
+      ,[VersionBehavior]
+      ,[VersionTrimValue]
+      ,[GlobalTriggering]
+      ,[EnableLockout]
+      ,[LockoutPeriod]
+      ,[AttemptPeriod]
+      ,[AttemptCount]
+      ,[EnableTimeout]
+      ,[TimeoutPeriod]
+      ,[TimeoutUserIDs]
+      ,[DisableConcurrentLogin]
+      ,[EnableAPI]
+      ,[EnableStepLogging]
+      ,[AuditEventsTrimTimeFrame]
+      ,[AuditEventsTrimCount]
+      ,[PCMMinimumLength]
+      ,[PCMAllowLowercase]
+      ,[PCMMinimumLowercase]
+      ,[PCMAllowUppercase]
+      ,[PCMMinimumUppercase]
+      ,[PCMAllowNumbers]
+      ,[PCMMinimumNumbers]
+      ,[PCMAllowSpecCharacters]
+      ,[PCMMinimumSpecCharacters]
+      ,[PCMEnablePasswordExpiration]
+      ,[PCMPasswordExpirationPeriod]
+      ,[PCMEnablePasswordHistory]
+      ,[PCMEnforcePasswordHistory]
+      ,[EnableCustomActions]
+	  ,[RowLastUpdated])
+    VALUES (source.[ID],source.[UseIPFilters],source.[BlockListType] ,source.[BlockedIPList] ,source.[DefaultIPFiltersAllow]
+      ,source.[UseSSL] ,source.[CertStoreLocation] ,source.[CertStoreName] ,source.[CertSearchType] ,source.[CertSearchValue]
+      ,source.[SMTPServer] ,source.[SMTPPort] ,source.[SMTPUser] ,source.[SMTPPassword] ,source.[ErrorNotifyEmailToAddress]
+      ,source.[ErrorNotifyEmailFromAddress] ,source.[ErrorRunTaskName] ,source.[UseLowestCompletionState] ,source.[LowestCompletionState]
+      ,source.[TrimTimeFrame] ,source.[TrimCount] ,source.[InstancesTrimTimeFrame] ,source.[InstancesTrimCount] ,source.[TaskStepsTrimTimeFrame] ,source.[TaskStepsTrimCount]
+      ,source.[MaxRunningWorkflows] ,source.[WorkflowDelayAfterStartup] ,source.[DefaultStaging] ,source.[Versioned]
+      ,source.[VersionBehavior] ,source.[VersionTrimValue] ,source.[GlobalTriggering] ,source.[EnableLockout] ,source.[LockoutPeriod]
+      ,source.[AttemptPeriod] ,source.[AttemptCount] ,source.[EnableTimeout] ,source.[TimeoutPeriod] ,source.[TimeoutUserIDs]
+      ,source.[DisableConcurrentLogin] ,source.[EnableAPI] ,source.[EnableStepLogging] ,source.[AuditEventsTrimTimeFrame] ,source.[AuditEventsTrimCount]
+      ,source.[PCMMinimumLength] ,source.[PCMAllowLowercase] ,source.[PCMMinimumLowercase] ,source.[PCMAllowUppercase] ,source.[PCMMinimumUppercase]
+      ,source.[PCMAllowNumbers] ,source.[PCMMinimumNumbers] ,source.[PCMAllowSpecCharacters] ,source.[PCMMinimumSpecCharacters]
+      ,source.[PCMEnablePasswordExpiration] ,source.[PCMPasswordExpirationPeriod] ,source.[PCMEnablePasswordHistory] ,source.[PCMEnforcePasswordHistory]
+      ,source.[EnableCustomActions] ,GETDATE()
+	  )
+
+-- For Updates
+WHEN MATCHED AND (
+	target.[GlobalTriggering] <> source.[GlobalTriggering]
+) THEN
+    UPDATE SET
+        target.[GlobalTriggering] = source.[GlobalTriggering],
+		[RowLastUpdated] = GETDATE()
+
+-- For Delete
+WHEN NOT MATCHED BY source THEN
+	DELETE
+
+OUTPUT inserted.ID, $action, inserted.GlobalTriggering INTO [TaskTracker].[dbo].[change_log_automate_server_settings] (ID, change_type, global_triggering)
+;
+""")
+        # Execute the transfer using run_in_threadpool for synchronous operations
+        await run_in_threadpool(self._sync_transfer_data, transfer_sql)
+
     def _sync_transfer_data(self, sql_statement):
         """Synchronizes the transfer of data."""
         with self.target_session_local() as session:

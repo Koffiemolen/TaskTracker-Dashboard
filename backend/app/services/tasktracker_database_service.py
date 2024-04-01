@@ -5,8 +5,6 @@ from sqlalchemy import text, create_engine
 from sqlalchemy.orm import Session
 from sqlalchemy.exc import SQLAlchemyError
 
-
-
 class TaskTrackerDatabaseService:  # pylint: disable=too-few-public-methods
     """
     A service for managing and interacting with the database.

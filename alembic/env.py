@@ -37,6 +37,9 @@ load_dotenv()
 automate_db_connection_string = os.getenv('AUTOMATE_DB_CONNECTION_STRING')
 tasktracker_db_connection_string = os.getenv('TASKTRACKER_DB_CONNECTION_STRING')
 
+print(f"Automate DB Connection String: {automate_db_connection_string}")
+print(f"TaskTracker DB Connection String: {tasktracker_db_connection_string}")
+
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
 config = context.config

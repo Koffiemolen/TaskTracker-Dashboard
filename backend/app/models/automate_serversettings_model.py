@@ -1,0 +1,72 @@
+"""
+This is the model for the Automate Server Settings table in the database
+"""
+import datetime
+from sqlalchemy import Column, Integer, String, Boolean, DateTime
+from .base_model import Base  # pylint: disable=relative-beyond-top-level
+
+class AutomateServerSettings(Base):  # pylint: disable=too-few-public-methods
+    """
+    This is the Task class involving different details about a task.
+    """
+    __tablename__ = 'automateserversettings'
+
+    ID = Column(String(38), primary_key=True)
+    UseIPFilters = Column(Boolean, nullable=True)
+    BlockListType = Column(Integer, nullable=True)
+    BlockedIPList = Column(String(255), nullable=True)
+    DefaultIPFiltersAllow = Column(Boolean, nullable=True)
+    UseSSL = Column(Boolean, nullable=True)
+    CertStoreLocation = Column(Integer, nullable=True)
+    CertStoreName = Column(Integer, nullable=True)
+    CertSearchType = Column(Integer, nullable=True)
+    CertSearchValue = Column(String(512), nullable=True)
+    SMTPServer = Column(String(256), nullable=True)
+    SMTPPort = Column(Integer, nullable=True)
+    SMTPUser = Column(String(512), nullable=True)
+    SMTPPassword = Column(String(512), nullable=True)
+    ErrorNotifyEmailToAddress = Column(String(256), nullable=True)
+    ErrorNotifyEmailFromAddress = Column(String(256), nullable=True)
+    ErrorRunTaskName = Column(String(128), nullable=True)
+    UseLowestCompletionState = Column(Boolean, nullable=True)
+    LowestCompletionState = Column(Integer, nullable=True)
+    TrimTimeFrame = Column(Integer, nullable=True)
+    TrimCount = Column(Integer, nullable=True)
+    InstancesTrimTimeFrame = Column(Integer, nullable=True)
+    InstancesTrimCount = Column(Integer, nullable=True)
+    TaskStepsTrimTimeFrame = Column(Integer, nullable=True)
+    TaskStepsTrimCount = Column(Integer, nullable=True)
+    MaxRunningWorkflows = Column(Integer, nullable=True)
+    WorkflowDelayAfterStartup = Column(Integer, nullable=True)
+    DefaultStaging = Column(Integer, nullable=True)
+    Versioned = Column(Boolean, nullable=True)
+    VersionBehavior = Column(Integer, nullable=True)
+    VersionTrimValue = Column(Integer, nullable=True)
+    GlobalTriggering = Column(Boolean, nullable=True)
+    EnableLockout = Column(Boolean, nullable=True)
+    LockoutPeriod = Column(Integer, nullable=True)
+    AttemptPeriod = Column(Integer, nullable=True)
+    AttemptCount = Column(Integer, nullable=True)
+    EnableTimeout = Column(Boolean, nullable=True)
+    TimeoutPeriod = Column(Integer, nullable=True)
+    TimeoutUserIDs = Column(String(255), nullable=True)
+    DisableConcurrentLogin = Column(Boolean, nullable=True)
+    EnableAPI = Column(Boolean, nullable=True)
+    EnableStepLogging = Column(Boolean, nullable=True)
+    AuditEventsTrimTimeFrame = Column(Integer, nullable=True)
+    AuditEventsTrimCount = Column(Integer, nullable=True)
+    PCMMinimumLength = Column(Integer, nullable=True)
+    PCMAllowLowercase = Column(Boolean, nullable=True)
+    PCMMinimumLowercase = Column(Integer, nullable=True)
+    PCMAllowUppercase = Column(Boolean, nullable=True)
+    PCMMinimumUppercase = Column(Integer, nullable=True)
+    PCMAllowNumbers = Column(Boolean, nullable=True)
+    PCMMinimumNumbers = Column(Integer, nullable=True)
+    PCMAllowSpecCharacters = Column(Boolean, nullable=True)
+    PCMMinimumSpecCharacters = Column(Integer, nullable=True)
+    PCMEnablePasswordExpiration = Column(Boolean, nullable=True)
+    PCMPasswordExpirationPeriod = Column(Integer, nullable=True)
+    PCMEnablePasswordHistory = Column(Boolean, nullable=True)
+    PCMEnforcePasswordHistory = Column(Integer, nullable=True)
+    EnableCustomActions = Column(Boolean, nullable=True)
+    RowLastUpdated = Column(DateTime, nullable=True, default=datetime.datetime.utcnow)
