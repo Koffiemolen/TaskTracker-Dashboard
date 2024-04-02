@@ -43,6 +43,8 @@ class WorkflowSchema(BaseModel):
                 orm_mode (bool): Whether the class operates in an ORM mode.
 
     """
+    __tablename__ = 'workflows'
+
     ResourceID: str
     WorkflowName: str
     ParentID: str

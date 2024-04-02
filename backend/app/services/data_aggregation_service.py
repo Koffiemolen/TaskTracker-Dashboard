@@ -19,10 +19,22 @@ Classes:
 
 Note: This module is a part of a larger system, and usage should conform to that wider architecture.
 """
-
+import json
+from datetime import datetime, timedelta
 from sqlalchemy import create_engine, text
 from sqlalchemy.orm import sessionmaker
 from fastapi.concurrency import run_in_threadpool
+from marshmallow_sqlalchemy import SQLAlchemyAutoSchema
+from backend.app.websocket_manager import manager  # pylint: disable=import-error
+from backend.app.models.monitor_automate_serversettings_model import ServerSettingsChangeLog  # pylint: disable=import-error
+from backend.app.schemas.monitor_automate_serversettings_schema import ServerSettingsChangeLogSchema  # pylint: disable=import-error
+
+class ServerSettingsChangeLogSchema(SQLAlchemyAutoSchema):  # pylint: disable=too-few-public-methods, function-redefined
+    """ Fancy docstring here"""
+    class Meta:  # pylint: disable=too-few-public-methods
+        """ tada """
+        model = ServerSettingsChangeLog
+        load_instance = True
 
 
 class DataAggregationService:  # pylint: disable=too-few-public-methods
@@ -37,6 +49,185 @@ class DataAggregationService:  # pylint: disable=too-few-public-methods
                                                  bind=self.source_engine)  # pylint: disable=line-too-long
         self.target_session_local = sessionmaker(autocommit=False, autoflush=False,
                                                  bind=self.target_engine)  # pylint: disable=line-too-long
+
+    # Adjusting the coroutine to run once per invocation
+    async def monitor_table_changes(self):
+        """Checks for new rows in the table once and sends notifications."""
+        last_checked_time = datetime.now() - timedelta(seconds=5)  # Adjust according to your needs
+        # Assuming last_checked_time is stored in a way that persists between invocations
+        with self.source_session_local() as session:
+            result = session.execute(
+                # text("SELECT * FROM [TaskTracker].[dbo].[change_log_automate_server_settings] WHERE global_triggering = 0 AND timestamp > :last_checked_time"),
+                # {"last_checked_time": last_checked_time}
+                text(
+                    "SELECT * FROM [TaskTracker].[dbo].[change_log_automate_server_settings] WHERE timestamp > :last_checked_time"),
+                {"last_checked_time": last_checked_time}
+            )
+            new_rows = result.mappings().all()
+            # print(f"new_rows before if statement: {new_rows}")
+            if new_rows:
+                # Update the last_checked_time based on the latest timestamp from new_rows
+                last_checked_time = max(row['timestamp'] for row in new_rows)
+                # print(f"converting rows {new_rows}")
+
+                # Adjust the schema usage to handle multiple items
+                schema = ServerSettingsChangeLogSchema(many=True)  # Set many=True here
+                output = schema.dump(new_rows, many=True)  # Ensure it's clear you're dumping multiple items
+
+                # Directly using output for JSON serialization
+                json_output = json.dumps(output)  # This is already JSON compatible
+
+                # Construct the WebSocket message
+                message = {
+                    "type": "server_settings_change",
+                    "data": json_output  # Use the output directly, which is already a list of dicts
+                }
+
+                print(f"final message: {message}")
+
+                # Serialize the entire message, not just the output
+                json_message = json.dumps(message)
+                print(f"final json message: {json_message}")
+                # Send the message over an established WebSocket connection
+                # await self.notify_clients(message)  # Consider sending the message directly without double dumping
+                # Send the message over an established WebSocket connection
+                await manager.broadcast(json_message, 'globaltriggering')
+                print("Broadcasted global triggering updates to channel 'globaltriggering' ")
+
+    async def notify_clients(self, message):
+        """Convert message to JSON string here if not already"""
+        json_message = json.dumps(message) if not isinstance(message, str) else message
+        print(f"New changes detected: {json_message}.")
+        await manager.broadcast(json_message)
+
+    def _sync_transfer_data(self, sql_statement):
+        """Synchronizes the transfer of data."""
+        with self.target_session_local() as session:
+            session.execute(sql_statement)
+            session.commit()
+
+    def fetch_new_or_updated_workflows(self):
+        """Checks for new rows in the table once and sends notifications."""
+        last_checked_time = datetime.now() - timedelta(seconds=10)  # Adjust according to your needs
+        # Assuming last_checked_time is stored in a way that persists between invocations
+        with self.source_session_local() as session:
+            result = session.execute(
+                text(
+                    "SELECT * FROM [TaskTracker].[dbo].[workflows] WHERE [UpdatedOn] > :last_checked_time"),
+                {"last_checked_time": last_checked_time}
+            )
+            workflows = result.mappings().all()
+            # print(f"workflows before if statement: {workflows}")
+
+            return workflows
+
+    def _serialize_workflow(self, workflow):
+        # Convert SQLAlchemy model instance to a dictionary for JSON serialization
+        return {
+            "ResourceID": workflow.ResourceID,
+            "WorkflowName": workflow.WorkflowName,
+            "CompletionState": workflow.CompletionState,
+            "Notes": workflow.Notes,
+            "LastModifiedOn": workflow.LastModifiedOn,
+            "Version": workflow.Version,
+            "VersionDate": workflow.VersionDate,
+            "Enabled": workflow.Enabled,
+            "Removed": workflow.Removed,
+            "ResultCode": workflow.ResultCode,
+            "ResultText": workflow.ResultText,
+            "StartedOn": workflow.StartedOn,
+            "EndedOn": workflow.EndedOn,
+            "NumberOfTasks": workflow.NumberOfTasks,
+            "NextLaunchDate": workflow.NextLaunchDate,
+            "LastLaunchDate": workflow.LastLaunchDate,
+            "UpdatedOn": workflow.UpdatedOn.isoformat() if workflow.UpdatedOn else None
+        }
+
+    async def check_for_workflow_update(self):
+        """ updating delta to ws channel"""
+        new_or_updated_workflows = self.fetch_new_or_updated_workflows()
+        if new_or_updated_workflows:
+            print(f"TADAAAAAAAAAA {len(new_or_updated_workflows)} new/updated workflows.")
+
+            # Serialize the workflows to JSON. Adjust this if your data structure requires.
+            # This example assumes that your workflows mappings can be directly serialized.
+            # If you have datetime or other complex types, convert them to strings or timestamps.
+            try:
+                message_data = json.dumps(new_or_updated_workflows,
+                                          default=str)  # Using default=str to handle most non-serializable types
+            except TypeError as e:
+                print(f"Error serializing workflows: {e}")
+                return
+
+            # Construct the WebSocket message
+            message = {
+                "type": "workflow_update",
+                "data": message_data
+            }
+            json_message = json.dumps(message)
+
+            # Send the message over an established WebSocket connection
+            await manager.broadcast(json_message, 'workflow_updates')
+            print("Broadcasted workflow updates to channel 'workflow_updates' ")
+
+
+    async def emit_workflow_updates(self, workflows, group=None):
+        """ todoo """
+        if workflows:  # Check if there are any updates to send
+            message = {"type": "workflow_update", "data": workflows}
+            # Call the generic emit method with optional group targeting
+            await self.emit(message, group=group)
+
+    async def emit(self, message, group=None):
+        """Convert message to JSON if it's not a string"""
+        if not isinstance(message, str):
+            message = json.dumps(message)
+        # Use the WebSocket manager to broadcast the message
+        await manager.broadcast(message, group=group)
+
+    def fetch_new_or_updated_tasks(self):
+        """Checks for new rows in the table once and sends notifications."""
+        last_checked_time = datetime.now() - timedelta(seconds=10)
+
+        with self.source_session_local() as session:
+            result = session.execute(
+                text(
+                    "SELECT * FROM [TaskTracker].[dbo].[tasks] WHERE [RowLastUpdated] > :last_checked_time"),
+                {"last_checked_time": last_checked_time}
+            )
+            tasks = result.mappings().all()
+            print(f"fetch_new_or_updated_tasks - tasks before if statement: {tasks}")
+
+            return tasks
+    async def check_for_task_update(self):
+        """ sending tasks deltas"""
+        print("check_for_task_update - Looking for new tasks")
+        new_or_updated_tasks = self.fetch_new_or_updated_tasks()
+
+        print("check_for_task_update - check if new_or_updated_tasks contains someting")
+        if new_or_updated_tasks:
+            print("check_for_task_update - new tasks present")
+            # Serialize the tasks to JSON. Adjust this if your data structure requires.
+            try:
+                message_data = json.dumps(new_or_updated_tasks,
+                                          default=str)  # Using default=str to handle most non-serializable types
+            except TypeError as e:
+                print(f"Error serializing tasks: {e}")
+                return
+
+            # Construct the WebSocket message
+            message = {
+                "type": "task_updates",
+                "data": message_data
+            }
+            json_message = json.dumps(message)
+
+            # Send the message over an established WebSocket connection
+            print(f"check_for_task_update - sending tasks: {json_message}")
+            await manager.broadcast(json_message, 'task_updates')
+            print("check_for_task_update - Broadcasted task updates to channel 'task_updates' ")
+        else:
+            print("No new tasks present")
 
     async def transfer_data_workflow(self):
         """This method handles the transfer of aggregated data."""
@@ -399,7 +590,8 @@ WHEN MATCHED AND (
 		target.EndedOn = source.EndedOn,
 		target.LockedBy = source.LockedBy,
 		target.SuccessCount = source.SuccessCount,
-		target.FailureCount = source.FailureCount
+		target.FailureCount = source.FailureCount,
+		target.RowLastUpdated = GETDATE()
 
 -- For Delete (if applicable)
 WHEN NOT MATCHED BY SOURCE THEN
@@ -409,7 +601,6 @@ WHEN NOT MATCHED BY SOURCE THEN
 
         # Execute the transfer using run_in_threadpool for synchronous operations
         await run_in_threadpool(self._sync_transfer_data, transfer_sql)
-
 
     async def transfer_automate_server_settings(self):
         """Transfers data for the server settings."""
@@ -569,10 +760,5 @@ OUTPUT inserted.ID, $action, inserted.GlobalTriggering INTO [TaskTracker].[dbo].
 ;
 """)
         # Execute the transfer using run_in_threadpool for synchronous operations
+        print("running transfer data")
         await run_in_threadpool(self._sync_transfer_data, transfer_sql)
-
-    def _sync_transfer_data(self, sql_statement):
-        """Synchronizes the transfer of data."""
-        with self.target_session_local() as session:
-            session.execute(sql_statement)
-            session.commit()
