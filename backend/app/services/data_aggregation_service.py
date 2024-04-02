@@ -20,9 +20,11 @@ Classes:
 Note: This module is a part of a larger system, and usage should conform to that wider architecture.
 """
 
+from datetime import datetime, timedelta
 from sqlalchemy import create_engine, text
 from sqlalchemy.orm import sessionmaker
 from fastapi.concurrency import run_in_threadpool
+from backend.app.websocket_manager import manager  # pylint: disable=import-error
 
 
 class DataAggregationService:  # pylint: disable=too-few-public-methods
@@ -37,6 +39,34 @@ class DataAggregationService:  # pylint: disable=too-few-public-methods
                                                  bind=self.source_engine)  # pylint: disable=line-too-long
         self.target_session_local = sessionmaker(autocommit=False, autoflush=False,
                                                  bind=self.target_engine)  # pylint: disable=line-too-long
+
+    # Adjusting the coroutine to run once per invocation
+    async def monitor_table_changes(self):
+        """Checks for new rows in the table once and sends notifications."""
+        last_checked_time = datetime.now() - timedelta(seconds=5)  # Adjust according to your needs
+        # Assuming last_checked_time is stored in a way that persists between invocations
+        with self.source_session_local() as session:
+            result = session.execute(
+                text("SELECT * FROM [TaskTracker].[dbo].[change_log_automate_server_settings] WHERE global_triggering = 0 AND timestamp > :last_checked_time"),
+                {"last_checked_time": last_checked_time}
+            )
+            new_rows = result.mappings().all()
+            if new_rows:
+                last_checked_time = max(row['timestamp'] for row in new_rows)
+                await self.notify_clients(new_rows)
+
+    async def notify_clients(self, new_rows):
+        """Sends a WebSocket notification for new rows."""
+        # Format your message as needed
+        print(f"New changes detected: {len(new_rows)} rows added with GlobalTriggering = 0.")
+        message = f"New changes detected: {len(new_rows)} rows added with GlobalTriggering = 0."
+        await manager.broadcast(message)  # Assuming 'manager' is your WebSocket connection manager instance
+
+    def _sync_transfer_data(self, sql_statement):
+        """Synchronizes the transfer of data."""
+        with self.target_session_local() as session:
+            session.execute(sql_statement)
+            session.commit()
 
     async def transfer_data_workflow(self):
         """This method handles the transfer of aggregated data."""
@@ -410,7 +440,6 @@ WHEN NOT MATCHED BY SOURCE THEN
         # Execute the transfer using run_in_threadpool for synchronous operations
         await run_in_threadpool(self._sync_transfer_data, transfer_sql)
 
-
     async def transfer_automate_server_settings(self):
         """Transfers data for the server settings."""
         transfer_sql = text(""" MERGE INTO [TaskTracker].[dbo].[automateserversettings] AS target
@@ -569,10 +598,5 @@ OUTPUT inserted.ID, $action, inserted.GlobalTriggering INTO [TaskTracker].[dbo].
 ;
 """)
         # Execute the transfer using run_in_threadpool for synchronous operations
+        print("running transfer data")
         await run_in_threadpool(self._sync_transfer_data, transfer_sql)
-
-    def _sync_transfer_data(self, sql_statement):
-        """Synchronizes the transfer of data."""
-        with self.target_session_local() as session:
-            session.execute(sql_statement)
-            session.commit()
