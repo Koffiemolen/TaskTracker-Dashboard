@@ -36,7 +36,7 @@ export default defineComponent({
     const handleLogin = async () => {
       try {
         await userStore.login(username.value, password.value)
-        router.push('/')
+        await router.push('/')
       } catch (error: unknown) {
         loginError.value = true
         if (error instanceof Error) {

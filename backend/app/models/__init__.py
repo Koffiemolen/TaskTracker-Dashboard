@@ -13,4 +13,4 @@ from .trigger_model import Trigger
 from .workflow_link_construct import WorkflowLinkConstruct
 from .automate_serversettings_model import AutomateServerSettings
 from .task_enriched_model import EnrichedTask
-from .monitor_automate_serversettings import ServerSettingsChangeLog
+from .monitor_automate_serversettings_model import ServerSettingsChangeLog
