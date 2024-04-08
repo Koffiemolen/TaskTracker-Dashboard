@@ -1,4 +1,3 @@
-# backend/app/websocket_manager.py
 """ This module contains the ConnectionManager class which
     is responsible for managing the WebSocket connections.
 """

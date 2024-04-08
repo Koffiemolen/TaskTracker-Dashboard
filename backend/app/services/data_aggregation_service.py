@@ -602,6 +602,7 @@ WHEN NOT MATCHED BY SOURCE THEN
         # Execute the transfer using run_in_threadpool for synchronous operations
         await run_in_threadpool(self._sync_transfer_data, transfer_sql)
 
+
     async def transfer_automate_server_settings(self):
         """Transfers data for the server settings."""
         transfer_sql = text(""" MERGE INTO [TaskTracker].[dbo].[automateserversettings] AS target
@@ -762,3 +763,9 @@ OUTPUT inserted.ID, $action, inserted.GlobalTriggering INTO [TaskTracker].[dbo].
         # Execute the transfer using run_in_threadpool for synchronous operations
         print("running transfer data")
         await run_in_threadpool(self._sync_transfer_data, transfer_sql)
+
+    def _sync_transfer_data(self, sql_statement):
+        """Synchronizes the transfer of data."""
+        with self.target_session_local() as session:
+            session.execute(sql_statement)
+            session.commit()
