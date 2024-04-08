@@ -6,23 +6,26 @@
 <!--      <p>{{ userDetails.role }}</p>-->
       <p>admin</p>
     </div>
-    <transition name="fade">
-      <div v-if="!globalTrigger" class="global-trigger-warning">
-        Global trigger is disabled.
-      </div>
-    </transition>
+    <div v-if="serverSettingsStore.globalTriggeringDisabled" class="red-banner">
+      Global Triggering is Disabled.
+    </div>
   </header>
 </template>
 
+<!--<script setup lang="ts">-->
 <script>
 import { defineComponent, ref } from 'vue'
 import DashboardSearch from './DashboardSearch.vue'
 import { useToast } from 'vue-toastification'
+import { useServerSettingsStore } from '@/store/serverSettings' // Import the store
 
 export default defineComponent({
   setup () {
     const toast = useToast()
-    const globalTrigger = ref(true) // Initialize the global trigger as true
+    const serverSettingsStore = useServerSettingsStore() // Use the store
+
+    // Access the globalTrigger directly from the store
+    const globalTrigger = serverSettingsStore.globalTriggeringDisabled
 
     const showSuccessToast = () => {
       toast.success('This is a success toast!', {
@@ -35,11 +38,11 @@ export default defineComponent({
       })
     }
 
-    const toggleGlobalTrigger = () => {
-      globalTrigger.value = !globalTrigger.value // Toggle the state
-    }
+    // const toggleGlobalTrigger = () => {
+    //   globalTrigger.value = !globalTrigger.value // Toggle the state
+    // }
 
-    return { showSuccessToast, showErrorToast, toggleGlobalTrigger, globalTrigger }
+    return { showSuccessToast, showErrorToast, serverSettingsStore }
   },
   name: 'DashboardHeader',
   components: { DashboardSearch },
@@ -89,5 +92,26 @@ header {
   text-align: center;
   padding: 10px 0;
   margin-top: 20px;
+}
+.red-banner {
+  background-color: #ffdddd; /* Red background color */
+  color: #d00; /* Dark red text color */
+  width: 100%;
+  text-align: center;
+  padding: 10px 0;
+  margin-top: 20px;
+  transition: opacity 1s ease-in-out;
+}
+
+/* You can also include the fadeGlow animation if you want the banner to have a glowing effect */
+@keyframes fadeGlow {
+  0%, 100% {
+    opacity: 0.5;
+    box-shadow: 0 0 5px #ff0000, 0 0 10px #ff0000, 0 0 15px #ff0000, 0 0 20px #ff0000;
+  }
+  50% {
+    opacity: 1;
+    box-shadow: 0 0 10px #ff0000, 0 0 20px #ff0000, 0 0 30px #ff0000, 0 0 40px #ff0000, 0 0 50px #ff0000, 0 0 60px #ff0000, 0 0 70px #ff0000;
+  }
 }
 </style>
