@@ -2,6 +2,7 @@
 # main.py
 import os
 import asyncio
+import json
 from datetime import datetime
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi import FastAPI, WebSocket
@@ -146,19 +147,6 @@ async def say_hello(name: str):
     """Say hello to a user."""
     return {"message": f"Hello {name}"}
 
-
-# ("/ws")
-# @app.websocket("/ws")
-# async def websocket_endpoint(websocket: WebSocket, channel: str):
-#     """Websocket endpoint."""
-#     await manager.connect(websocket, channel)
-#     try:
-#         while True:
-#             data = await websocket.receive_text()  # pylint: disable=unused-variable
-#             # You can handle incoming messages here if needed
-#     except WebSocketDisconnect:
-#         manager.disconnect(websocket)
-
 @app.websocket("/ws/{channel}")
 async def websocket_endpoint(websocket: WebSocket, channel: str):
     """
@@ -183,48 +171,11 @@ async def websocket_endpoint(websocket: WebSocket, channel: str):
     """
     try:
         await manager.connect(websocket, channel)
-        await websocket.send_text("WebSocket connection established")
+        # await websocket.send_text("WebSocket connection established")
+        await websocket.send_text(json.dumps({"message": "WebSocket connection established"}))
         while True:
             # Depending on your application's logic, you might wait for a message
             # from the client or perform other operations here.
             await asyncio.sleep(10)  # Example placeholder for ongoing operations.
     except WebSocketDisconnect:
         manager.disconnect(websocket, channel)
-
-
-# ("/ws/serversettings")
-# ("/ws/workflow_updates")
-# @app.websocket("/ws/{channel}")
-# async def websocket_endpoint(websocket: WebSocket, channel: str):
-#     """WebSocket endpoint that assigns the socket to a specified channel."""
-#     await manager.connect(websocket, channel)
-#     try:
-#         while True:
-#             data = await websocket.receive_text()
-#             # Optional: Handle incoming messages based on the channel
-#             # For example, you could dispatch to different functions based on the channel value
-#             # handle_message(channel, data)
-#     except WebSocketDisconnect:
-#         manager.disconnect(websocket, channel)
-
-
-# @app.websocket("/ws/workflow_updates")
-# async def websocket_endpoint(websocket: WebSocket, channel: str):
-#     """Websocket endpoint."""
-#     await manager.connect(websocket, channel)
-#     try:
-#         while True:
-#             data = await websocket.receive_text()  # pylint: disable=unused-variable
-#             # You can handle incoming messages here if needed
-#     except WebSocketDisconnect:
-#         manager.disconnect(websocket)
-#
-# @app.websocket("/ws/test")
-# async def websocket_test_endpoint(websocket: WebSocket):
-#     await websocket.accept()
-#     try:
-#         while True:
-#             await websocket.send_text("Hello from server")
-#             await asyncio.sleep(5)  # Send a message every 5 seconds
-#     except WebSocketDisconnect:
-#         print("Client disconnected")
