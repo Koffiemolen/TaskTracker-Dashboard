@@ -3,51 +3,46 @@
     <DashboardSearch />
     <div class="user-greeting">
       <h2>Welcome {{ username }}</h2>
-<!--      <p>{{ userDetails.role }}</p>-->
       <p>admin</p>
     </div>
-    <div v-if="serverSettingsStore.globalTriggeringDisabled" class="red-banner">
-      Global Triggering is Disabled.
+    <div v-if="isGlobalTriggeringDisabled" class="red-banner">
+      Global Triggering is currently disabled.
     </div>
+<!--    <div class="red-banner test-banner">-->
+<!--      This is a test banner and should always be visible.-->
+<!--    </div>-->
+<!--    <button @click="toggleGlobalTriggering">Toggle Global Triggering</button>-->
   </header>
 </template>
 
-<!--<script setup lang="ts">-->
 <script>
-import { defineComponent, ref } from 'vue'
+import { defineComponent, computed } from 'vue'
 import DashboardSearch from './DashboardSearch.vue'
-import { useToast } from 'vue-toastification'
-import { useServerSettingsStore } from '@/store/serverSettings' // Import the store
+import { useServerSettingsStore } from '@/store/serverSettings'
 
 export default defineComponent({
-  setup () {
-    const toast = useToast()
-    const serverSettingsStore = useServerSettingsStore() // Use the store
-
-    // Access the globalTrigger directly from the store
-    const globalTrigger = serverSettingsStore.globalTriggeringDisabled
-
-    const showSuccessToast = () => {
-      toast.success('This is a success toast!', {
-        // Optional toast options
-      })
-    }
-    const showErrorToast = () => {
-      toast.error('This is an error toast!', {
-        // Optional toast options
-      })
-    }
-
-    // const toggleGlobalTrigger = () => {
-    //   globalTrigger.value = !globalTrigger.value // Toggle the state
-    // }
-
-    return { showSuccessToast, showErrorToast, serverSettingsStore }
-  },
   name: 'DashboardHeader',
   components: { DashboardSearch },
   props: {
     username: String
+  },
+  setup () {
+    const serverSettingsStore = useServerSettingsStore()
+    const isGlobalTriggeringDisabled = computed(() => {
+      const result = serverSettingsStore.globalTriggeringDisabled
+      console.log('isGlobalTriggeringDisabled', result)
+      return result
+    })
+
+    function toggleGlobalTriggering () {
+      serverSettingsStore.updateGlobalTriggeringStatus(!serverSettingsStore.globalTriggeringDisabled)
+    }
+
+    // Now return everything together in a single object
+    return {
+      isGlobalTriggeringDisabled,
+      toggleGlobalTriggering // Include this method for use in the template
+    }
   }
 })
 </script>
@@ -55,7 +50,7 @@ export default defineComponent({
 <style scoped>
 header {
   display: flex;
-  flex-direction: column; /* Adjusted to allow banner to display correctly */
+  flex-direction: column;
   justify-content: space-between;
   align-items: center;
   padding-bottom: 20px;
@@ -67,51 +62,19 @@ header {
   text-align: right;
 }
 
-.user-greeting h2, .global-trigger-warning {
+.user-greeting h2 {
   margin: 0;
   font-size: 1.5rem;
   color: #333;
 }
 
-@keyframes fadeGlow {
-  0%, 100% {
-    opacity: 0.5;
-    box-shadow: 0 0 5px #ff0000, 0 0 10px #ff0000, 0 0 15px #ff0000, 0 0 20px #ff0000;
-  }
-  50% {
-    opacity: 1;
-    box-shadow: 0 0 10px #ff0000, 0 0 20px #ff0000, 0 0 30px #ff0000, 0 0 40px #ff0000, 0 0 50px #ff0000, 0 0 60px #ff0000, 0 0 70px #ff0000;
-  }
-}
-
-.global-trigger-warning {
-  transition: opacity 1s ease-in-out;
+.red-banner {
   background-color: #ffdddd;
   color: #d00;
   width: 100%;
   text-align: center;
   padding: 10px 0;
   margin-top: 20px;
-}
-.red-banner {
-  background-color: #ffdddd; /* Red background color */
-  color: #d00; /* Dark red text color */
-  width: 100%;
-  text-align: center;
-  padding: 10px 0;
-  margin-top: 20px;
   transition: opacity 1s ease-in-out;
-}
-
-/* You can also include the fadeGlow animation if you want the banner to have a glowing effect */
-@keyframes fadeGlow {
-  0%, 100% {
-    opacity: 0.5;
-    box-shadow: 0 0 5px #ff0000, 0 0 10px #ff0000, 0 0 15px #ff0000, 0 0 20px #ff0000;
-  }
-  50% {
-    opacity: 1;
-    box-shadow: 0 0 10px #ff0000, 0 0 20px #ff0000, 0 0 30px #ff0000, 0 0 40px #ff0000, 0 0 50px #ff0000, 0 0 60px #ff0000, 0 0 70px #ff0000;
-  }
 }
 </style>

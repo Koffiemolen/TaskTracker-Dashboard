@@ -1,41 +1,143 @@
 // src/services/websocketService.ts
 import { useServerSettingsStore } from '@/store/serverSettings'
 
-class WebSocketService {
+interface WebSocketChannelConfig {
+  path: string;
+  onMessage: (event: MessageEvent) => void;
+}
+
+interface Change {
+  RowID: number;
+  ID: string;// eslint-disable-next-line
+  change_type: string;// eslint-disable-next-line
+  global_triggering: number;
+  timestamp: string;
+}
+
+class WebSocketChannel {
+  public config: WebSocketChannelConfig;
   private ws: WebSocket | null = null;
 
-  constructor () {
+  constructor (config: WebSocketChannelConfig) {
+    this.config = config
     this.connect()
   }
 
-  connect () {
-    this.ws = new WebSocket('ws://localhost:8000/ws')
+  private connect () {
+    this.ws = new WebSocket(`ws://localhost:8000${this.config.path}`)
 
-    this.ws.onmessage = this.onMessage
-    this.ws.onclose = this.onClose
-    // Handle other events (open, error) as needed
-  }
-
-  onMessage (event: MessageEvent) {
-    const data = JSON.parse(event.data)
-    const serverSettingsStore = useServerSettingsStore()
-
-    // Example handling for server settings change
-    if (data.type === 'server_settings_change') {
-      const isDisabled = data.data.some((change: any) => change.global_triggering === 0)
-      serverSettingsStore.updateGlobalTriggeringStatus(isDisabled)
+    this.ws.onopen = (event: Event) => {
+      console.log(`Connected to ${this.config.path}`)
+      // Optionally, invoke onOpen logic here if needed
     }
 
-    // Handle other message types...
+    this.ws.onmessage = (event: MessageEvent) => {
+      this.config.onMessage(event)
+    }
+
+    this.ws.onclose = (event: CloseEvent) => {
+      console.log(`Disconnected from ${this.config.path}. Attempting to reconnect...`)
+      setTimeout(() => this.connect(), 5000)
+      // Optionally, invoke onClose logic here if needed
+    }
+
+    this.ws.onerror = (event: Event) => {
+      console.error(`Error on ${this.config.path}:`, event)
+      // Optionally, invoke onError logic here if needed
+    }
   }
 
-  onClose () {
-    console.log('WebSocket closed. Attempting to reconnect...')
-    setTimeout(() => this.connect(), 5000) // Attempt to reconnect after a delay
-  }
-
-  // Add methods for sending messages, handling other events, etc.
+  // Add methods for sending messages to this channel, etc.
 }
 
-// Export an instance
-export const webSocketService = new WebSocketService()
+interface Subscription {
+  messageType: string
+  callback: (data: any) => void
+}
+
+class WebSocketService {
+  private channels: WebSocketChannel[] = []
+  private subscriptions: Subscription[] = []
+
+  constructor (channels: WebSocketChannelConfig[]) {
+    channels.forEach(channelConfig => this.addChannel(channelConfig))
+  }
+
+  addChannel (config: WebSocketChannelConfig) {
+    const channel = new WebSocketChannel({
+      ...config,
+      onMessage: (event: MessageEvent) => {
+        const data = JSON.parse(event.data)
+        this.notifySubscribers(data)
+        if (config.onMessage) config.onMessage(event)
+      }
+    })
+    this.channels.push(channel)
+  }
+
+  subscribe (messageType: string, callback: (data: any) => void) {
+    this.subscriptions.push({ messageType, callback })
+  }
+
+  unsubscribe (messageType: string, callback: (data: any) => void) {
+    this.subscriptions = this.subscriptions.filter(sub =>
+      !(sub.messageType === messageType && sub.callback === callback))
+  }
+
+  private notifySubscribers (data: any) {
+    this.subscriptions.forEach(sub => {
+      if (data.type === sub.messageType) {
+        sub.callback(data)
+      }
+    })
+  }
+
+  // Additional methods...
+}
+
+// initialization
+const webSocketService = new WebSocketService([
+  {
+    path: '/ws/globaltriggering',
+    onMessage: (event: MessageEvent) => {
+      try {
+        const message = JSON.parse(event.data)
+        console.log('Message from /ws/globaltriggering', event.data)
+
+        if (message.type === 'server_settings_change') {
+          const changes = JSON.parse(message.data) as Change[]
+          const isDisabled = changes.some(change => {
+            console.log('Checking change:', change.global_triggering)
+            return change.global_triggering === 0
+          })
+
+          console.log('Parsed changes:', changes) // Debugging line to see the parsed changes
+          console.log('Global triggering status:', isDisabled ? 'disabled' : 'enabled')
+
+          const serverSettingsStore = useServerSettingsStore()
+          serverSettingsStore.updateGlobalTriggeringStatus(isDisabled)
+        }
+        // You can handle the message or forward it to subscribed components
+      } catch (error) {
+        console.error('Error parsing message:', error)
+        console.log('Original message:', event.data)
+      }
+    }
+  },
+  {
+    path: '/ws/workflow_updates',
+    onMessage: (event: MessageEvent) => {
+      console.log('Message from /ws/workflow_updates', event.data)
+      // You can handle the message or forward it to subscribed components
+    }
+  },
+  {
+    path: '/ws/workflow_metadata',
+    onMessage: (event: MessageEvent) => {
+      console.log('Message from /ws/workflow_metadata', event.data)
+      // You can handle the message or forward it to subscribed components
+    }
+  }
+])
+
+export { webSocketService }

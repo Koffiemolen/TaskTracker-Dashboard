@@ -7,6 +7,7 @@ export const useServerSettingsStore = defineStore('serverSettings', {
   }),
   actions: {
     updateGlobalTriggeringStatus (isDisabled: boolean) {
+      console.log(`Updating global triggering status: ${isDisabled}`)
       this.globalTriggeringDisabled = isDisabled
     }
   }

@@ -6,10 +6,8 @@ const BASE_URL = 'http://127.0.0.1:8000'
 
 // Create an Axios instance for making HTTP requests.
 const apiClient = axios.create({
-  baseURL: BASE_URL,
-  headers: {
-    Accept: 'application/json'
-  }
+  baseURL: BASE_URL,  // eslint-disable-next-line
+  headers: {'Accept': 'application/json'} // eslint-disable-next-line
 })
 
 apiClient.interceptors.request.use((config) => {
@@ -28,10 +26,6 @@ apiClient.interceptors.request.use((config) => {
 const dummyUserDetails = {
   name: 'Administrator',
   role: 'Admin'
-}
-
-export const dummyGlobalTriggering = {
-  active: true
 }
 
 const APIService = {
