@@ -7,7 +7,7 @@ from .base_model import Base  # pylint: disable=relative-beyond-top-level
 
 class AutomateServerSettings(Base):  # pylint: disable=too-few-public-methods
     """
-    This is the Task class involving different details about a task.
+    This is the Task class involving details about a task.
     """
     __tablename__ = 'automateserversettings'
 

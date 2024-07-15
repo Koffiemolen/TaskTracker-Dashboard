@@ -16,8 +16,6 @@ Classes:
         - `__init__`: This method initializes the `DataAggregationService` attributes.
         - `transfer_data`: This method handles the transfer of aggregated data.
         - `_sync_transfer_data`: This is a private method which syncs the data transfer.
-
-Note: This module is a part of a larger system, and usage should conform to that wider architecture.
 """
 import json
 from datetime import datetime, timedelta
@@ -72,7 +70,7 @@ class DataAggregationService:  # pylint: disable=too-few-public-methods
 
                 # Adjust the schema usage to handle multiple items
                 schema = ServerSettingsChangeLogSchema(many=True)  # Set many=True here
-                output = schema.dump(new_rows, many=True)  # Ensure it's clear you're dumping multiple items
+                output = schema.dump(new_rows, many=True)
 
                 # Directly using output for JSON serialization
                 json_output = json.dumps(output)  # This is already JSON compatible
@@ -89,7 +87,7 @@ class DataAggregationService:  # pylint: disable=too-few-public-methods
                 json_message = json.dumps(message)
                 print(f"final json message: {json_message}")
                 # Send the message over an established WebSocket connection
-                # await self.notify_clients(message)  # Consider sending the message directly without double dumping
+                # await self.notify_clients(message)
                 # Send the message over an established WebSocket connection
                 await manager.broadcast(json_message, 'globaltriggering')
                 print("Broadcasted global triggering updates to channel 'globaltriggering' ")
@@ -108,7 +106,7 @@ class DataAggregationService:  # pylint: disable=too-few-public-methods
 
     def fetch_new_or_updated_workflows(self):
         """Checks for new rows in the table once and sends notifications."""
-        last_checked_time = datetime.now() - timedelta(seconds=10)  # Adjust according to your needs
+        last_checked_time = datetime.now() - timedelta(seconds=10)
         # Assuming last_checked_time is stored in a way that persists between invocations
         with self.source_session_local() as session:
             result = session.execute(
@@ -149,9 +147,7 @@ class DataAggregationService:  # pylint: disable=too-few-public-methods
         if new_or_updated_workflows:
             print(f"TADAAAAAAAAAA {len(new_or_updated_workflows)} new/updated workflows.")
 
-            # Serialize the workflows to JSON. Adjust this if your data structure requires.
-            # This example assumes that your workflows mappings can be directly serialized.
-            # If you have datetime or other complex types, convert them to strings or timestamps.
+            # Serialize the workflows to JSON
             try:
                 message_data = json.dumps(new_or_updated_workflows,
                                           default=str)  # Using default=str to handle most non-serializable types

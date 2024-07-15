@@ -10,8 +10,7 @@ from .base_model import Base  # pylint: disable=relative-beyond-top-level
 
 class AgentData(Base):  # pylint: disable=too-few-public-methods
     """
-    This is the agent class involving different details about a agent.
-    Columns: AgentID, AgentName, GroupResourceID, GroupName, GroupParentID, Notes, CreatedOn, LastModifiedOn, Enabled  # pylint: disable=line-too-long
+    This is the agent class involving details about a agent.
     """
     __tablename__ = 'agents'
 

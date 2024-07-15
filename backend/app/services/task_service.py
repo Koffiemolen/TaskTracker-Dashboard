@@ -30,5 +30,5 @@ class TaskService:  # pylint: disable=too-few-public-methods
         """
         # Use the TaskTrackerDatabaseService to fetch data
         tasks_data = TaskTrackerDatabaseService.get_enriched_tasks(workflow_id)
-        # Convert the data to Pydantic models or other desired format
+        # Convert the data to Pydantic models
         return [TaskEnrichedSchema.model_validate(task) for task in tasks_data]

@@ -8,7 +8,7 @@ from .base_model import Base  # pylint: disable=relative-beyond-top-level
 
 class EnrichedTask(Base):  # pylint: disable=too-few-public-methods
     """
-    This is the EnrichedTask class involving different details about a task enriched with metadata.
+    This is the EnrichedTask class involving details about a task enriched with metadata.
     from agent and trigger
     """
     __tablename__ = 'tasks'

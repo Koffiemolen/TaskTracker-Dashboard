@@ -4,7 +4,6 @@ Automate Event Model
 
 import datetime
 from sqlalchemy import Column, Integer, String, DateTime
-
 from .base_model import Base
 
 

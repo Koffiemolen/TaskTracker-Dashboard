@@ -1,0 +1,29 @@
+// types/workflow.ts
+export interface Workflow {
+  ResourceID: string;
+  WorkflowName: string;
+  ParentID?: string;
+  ResourceType: number;
+  CompletionState: number;
+  Notes?: string;
+  CreatedBy: string;
+  CreatedOn: Date;
+  ModifiedOn?: Date;
+  LastModifiedOn?: Date;
+  Version: number;
+  VersionDate: Date;
+  Empty: number;
+  Enabled: boolean;
+  Removed: boolean;
+  ResultCode: number;
+  ResultText?: string;
+  StartedOn?: Date;
+  EndedOn?: Date;
+  LockedBy?: string;
+  SuccessCount: number;
+  FailureCount: number;
+  NumberOfTasks: number;
+  UpdatedOn: Date;
+  NextLaunchDate?: Date;
+  LastLaunchDate?: Date;
+}

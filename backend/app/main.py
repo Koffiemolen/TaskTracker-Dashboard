@@ -109,18 +109,18 @@ async def start_scheduler():
         trigger=IntervalTrigger(seconds=6)
     )
 
-    # Now, add the new job for checking workflow updates
+    # Add the new job for checking workflow updates
     task_scheduler.add_job(
         data_aggregation_service.check_for_workflow_update,
         'interval',
-        seconds=10,  # Adjust the interval as per your requirement
+        seconds=10,  # Adjust the interval as per requirement
         next_run_time=datetime.utcnow()  # Start checking for updates immediately upon startup
     )
 
     task_scheduler.add_job(
         data_aggregation_service.check_for_task_update,
         'interval',
-        seconds=10,  # Adjust the interval as per your requirement
+        seconds=10,  # Adjust the interval as per requirement
         next_run_time=datetime.utcnow()  # Start checking for updates immediately upon startup
     )
 
@@ -174,8 +174,8 @@ async def websocket_endpoint(websocket: WebSocket, channel: str):
         # await websocket.send_text("WebSocket connection established")
         await websocket.send_text(json.dumps({"message": "WebSocket connection established"}))
         while True:
-            # Depending on your application's logic, you might wait for a message
-            # from the client or perform other operations here.
-            await asyncio.sleep(10)  # Example placeholder for ongoing operations.
+            # Depending on your application's logic, might wait for a message
+            # from the client
+            await asyncio.sleep(10)
     except WebSocketDisconnect:
         manager.disconnect(websocket, channel)
