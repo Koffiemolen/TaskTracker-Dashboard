@@ -34,7 +34,7 @@ const APIService = {
   async getWorkflows () {
     try {
       const response = await apiClient.get('/workflows/list-all')
-      return response.data // Assuming the API response format is directly usable
+      return response.data
     } catch (error) {
       console.error('Error fetching workflows:', error)
       // Proper error handling here
@@ -59,7 +59,7 @@ const APIService = {
   async runWorkflow (workflowId: string) {
     try {
       const response = await apiClient.post(`/automateapi/workflows/${workflowId}/run`)
-      return response.data // Assuming the API response format is directly usable
+      return response.data
     } catch (error) {
       console.error('Error running workflow:', error)
       // Proper error handling here

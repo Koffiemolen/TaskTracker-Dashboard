@@ -15,7 +15,7 @@ const routes: Array<RouteRecordRaw> = [
     }
   },
   {
-    path: '/Dashboard', // Define a route for the login
+    path: '/Dashboard', // Define a route for the dashboard
     name: 'Dashboard',
     component: DashboardView,
     meta: {

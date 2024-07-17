@@ -69,12 +69,12 @@ export default {
 
     const handleWorkflowStarted = ({ workflowId, result }) => {
       console.log(`Workflow ${workflowId} started successfully. Result:`, result)
-      // Add any logic you want to execute when a workflow starts successfully
+      // Add any logic to execute when a workflow starts successfully
     }
 
     const handleWorkflowStartError = ({ workflowId, error }) => {
       console.error(`Error starting workflow ${workflowId}:`, error)
-      // Add any logic you want to execute in case of an error
+      // Add any logic to execute in case of an error
     }
 
     onMounted(async () => {
@@ -106,7 +106,7 @@ export default {
       } else if (type === 'error') {
         this.$toast.error(message)
       }
-      // Add more conditions if you have other toast types
+      // Add more conditions if other toast types
     }
 
     // handleShowModal (value) {

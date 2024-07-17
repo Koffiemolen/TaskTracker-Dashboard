@@ -117,7 +117,6 @@ const webSocketService = new WebSocketService([
           const serverSettingsStore = useServerSettingsStore()
           serverSettingsStore.updateGlobalTriggeringStatus(isDisabled)
         }
-        // You can handle the message or forward it to subscribed components
       } catch (error) {
         console.error('Error parsing message:', error)
         console.log('Original message:', event.data)
@@ -128,14 +127,12 @@ const webSocketService = new WebSocketService([
     path: '/ws/workflow_updates',
     onMessage: (event: MessageEvent) => {
       console.log('Message from /ws/workflow_updates', event.data)
-      // You can handle the message or forward it to subscribed components
     }
   },
   {
     path: '/ws/workflow_metadata',
     onMessage: (event: MessageEvent) => {
       console.log('Message from /ws/workflow_metadata', event.data)
-      // You can handle the message or forward it to subscribed components
     }
   }
 ])

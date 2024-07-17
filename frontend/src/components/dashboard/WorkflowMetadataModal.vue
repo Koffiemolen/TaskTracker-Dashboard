@@ -115,7 +115,7 @@ h2 {
 
 h3 {
   padding-left: 10px;
-  border-left: 5px solid #3273dc; /* Use a color that signifies the type of task or trigger */
+  border-left: 5px solid #3273dc;
 }
 
 .workflow-item {
@@ -168,7 +168,7 @@ dd {
   padding: 5px 10px;
   border-radius: 15px;
   color: #fff;
-  background-color: #44c767; /* Change according to status */
+  background-color: #44c767;
   font-size: 0.8em;
 }
 </style>

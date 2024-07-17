@@ -8,10 +8,6 @@
     <div v-if="isGlobalTriggeringDisabled" class="red-banner">
       Global Triggering is currently disabled.
     </div>
-<!--    <div class="red-banner test-banner">-->
-<!--      This is a test banner and should always be visible.-->
-<!--    </div>-->
-<!--    <button @click="toggleGlobalTriggering">Toggle Global Triggering</button>-->
   </header>
 </template>
 
@@ -40,8 +36,7 @@ export default defineComponent({
 
     // Now return everything together in a single object
     return {
-      isGlobalTriggeringDisabled,
-      toggleGlobalTriggering // Include this method for use in the template
+      isGlobalTriggeringDisabled
     }
   }
 })

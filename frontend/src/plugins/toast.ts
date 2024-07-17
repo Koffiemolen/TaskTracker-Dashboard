@@ -11,7 +11,6 @@ const toastPlugin: Plugin = {
       } else if (type === 'error') {
         toast.error(message)
       }
-      // Extend with more types as needed
     }
   }
 }

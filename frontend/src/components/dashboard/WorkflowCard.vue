@@ -54,7 +54,7 @@ import APIService from '@/services/APIService'
 import { defineComponent, ref } from 'vue'
 import WorkflowModal from '@/components/dashboard/WorkflowMetadataModal.vue'
 import tippy from 'tippy.js'
-import 'tippy.js/dist/tippy.css' // Don't forget to import the CSS
+import 'tippy.js/dist/tippy.css'
 export default defineComponent({
   name: 'WorkflowCard',
   components: {
@@ -82,15 +82,13 @@ export default defineComponent({
 
     tippy('.result-badge', {
       content (reference) {
-        return reference.getAttribute('data-title') // Assuming you're using the `data-title` for the tooltip content
+        return reference.getAttribute('data-title')
       }
     })
     async function handleWorkflowClick () {
       console.log('Card clicked')
       await getWorkflowMetaData()
       showModal.value = true
-      // Inside handleWorkflowClick
-      // emit('show-modal', true)
     }
 
     return { showModal, handleWorkflowClick, workflowMetadata }
@@ -272,7 +270,6 @@ export default defineComponent({
   align-items: center;
   padding: 0.5rem 1rem;
   border-bottom: 1px solid #eaeaea;
-  //height: 30px;
 }
 
 .card-title {
@@ -290,7 +287,6 @@ export default defineComponent({
   align-items: center; /* This will align flex items vertically in the center */
   justify-content: space-between; /* This spaces out the flex items horizontally */
   flex-wrap: wrap; /* Allow the items to wrap onto the next line on small screens */
-  //padding: 0.5rem 1rem;
 }
 
 .card-footer > div, .card-footer > button {
@@ -298,9 +294,8 @@ export default defineComponent({
   align-items: center;
 }
 
-/* You might want to add some margin to separate the items if they are too close */
 .card-footer > div, .card-footer > button {
-  margin-right: 1rem; /* Adjust as needed */
+  margin-right: 1rem;
 }
 
 /* Reset the margin for the last child to prevent extra spacing on the right */
@@ -360,7 +355,7 @@ export default defineComponent({
 }
 
 .workflow-info > div {
-  line-height: 0.3; /* Adjust this value as needed */
+  line-height: 0.3;
   margin-bottom: 0.8rem;
 }
 
@@ -406,7 +401,7 @@ export default defineComponent({
 }
 
 .result-badge:hover::after {
-  content: attr(data-title); /* Use a data attribute for dynamic content if necessary */
+  content: attr(data-title);
   position: absolute;
   top: 100%;
   left: 50%;
@@ -511,7 +506,7 @@ input:checked + .slider:before {
 .status-indicators {
   display: flex;
   align-items: center;
-  justify-content: space-between; /* This will need adjustments based on your layout */
+  justify-content: space-between;
   margin-bottom: 1rem;
 }
 .result-undefined {
