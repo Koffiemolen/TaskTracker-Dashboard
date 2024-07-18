@@ -46,7 +46,6 @@ class ConnectionManager:
                             print(f"function: broadcast - sending message: {connection}")
                             await connection.send_text(message)
                         except Exception as e:  # pylint: disable=broad-except
-                            # Consider logging the error and removing the connection if it's closed
                             print(f"function: broadcast - Error sending message: {e}")
                 else:
                     print(f"function: broadcast - group: {group} is not default andnot channel")
